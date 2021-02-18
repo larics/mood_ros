@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Find catkin macros and libraries if COMPONENTS list like find_package(catkin REQUIRED
 # COMPONENTS xyz) is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS dynamic_reconfigure)
+find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure pluginlib)
 
 # System dependencies are found with CMake's conventions find_package(Boost REQUIRED
 # COMPONENTS system)
@@ -41,7 +41,7 @@ add_dependencies(blob_detector ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(blob_detector ${catkin_LIBRARIES})
 
-add_library(detection_manager_node src/detection_manager.cpp)
+add_executable(detection_manager_node src/detection_manager.cpp)
 add_dependencies(detection_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(detection_manager_node ${catkin_LIBRARIES})
@@ -57,10 +57,13 @@ target_link_libraries(detection_manager_node ${catkin_LIBRARIES})
 # Install ##
 # ########################################################################################
 
-# Mark executables and/or libraries for installation install( TARGETS ${PROJECT_NAME}
-# ${PROJECT_NAME}_node ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} LIBRARY
-# DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION} RUNTIME DESTINATION
-# ${CATKIN_PACKAGE_BIN_DESTINATION})
+# Mark executables and/or libraries for installation
+
+install(
+  TARGETS blob_detector
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 # Mark cpp header files for installation
 install(
@@ -70,6 +73,7 @@ install(
   PATTERN "*.hpp"
   PATTERN ".svn" EXCLUDE)
 
+install(FILES plugins.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 # ########################################################################################
 # Testing ##
 # ########################################################################################

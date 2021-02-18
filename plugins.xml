@@ -1,0 +1,5 @@
+<library path="lib/libblob_detector">
+  <class name="BlobDetector" type="mood_plugin::BlobDetector" base_class_type="mood_base::detector_interface">
+    <description>A BlobDetector plugin.</description>
+  </class>
+</library>
