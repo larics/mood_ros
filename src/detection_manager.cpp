@@ -5,8 +5,10 @@
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "detection_manager");
-  auto detector = std::make_unique<pluginlib::ClassLoader<mood_base::detector_interface>>(
-    "mood_ros", "mood_plugin::BlobDetector");
+  auto plugin_loader =
+    std::make_unique<pluginlib::ClassLoader<mood_base::detector_interface>>(
+      "mood_ros", "mood_base::detector_interface");
+  auto detector = plugin_loader->createUniqueInstance("BlobDetector");
   ros::spin();
   return 0;
 }
