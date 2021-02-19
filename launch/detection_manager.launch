@@ -1,2 +1,16 @@
 <launch>
+  <arg name="namespace" default="$(env UAV_NAMESPACE)"/>
+  <arg name="manager_config" default="$(find mood_ros)/config/detection_manager_config.yaml"/>
+  <arg name="blob_config" default="$(find mood_ros)/config/blob_detector_config.yaml"/>
+
+  <node pkg="mood_ros" name="detection_manager_node" 
+    type="detection_manager_node" output="screen" ns="$(arg namespace)">
+    
+    <!-- Detection manager -->
+    <rosparam command="load" file="$(arg manager_config)"/>
+
+    <!-- Blob detector -->
+    <rosparam command="load" file="$(arg blob_config)"/>
+  </node>
+  
 </launch>
