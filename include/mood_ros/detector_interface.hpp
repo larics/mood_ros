@@ -1,7 +1,7 @@
 #ifndef DETECTOR_INTERFACE_HPP
 #define DETECTOR_INTERFACE_HPP
 
-#include <ros/console.h>
+#include <ros/ros.h>
 #include <mood_ros/sensor_comm.hpp>
 #include <geometry_msgs/PoseArray.h>
 
@@ -37,8 +37,18 @@ public:
    */
   virtual sensor_msgs::Image get_labeled_image() = 0;
 
+  /**
+   * @brief Initialize the detector.
+   * 
+   * @param nh A public ROS Node Handle.
+   * @param nh_private A private ROS Node Handle.
+   * @return true Detector initialization successful.
+   * @return false Detector initialization successful.
+   */
+  virtual bool initialize(ros::NodeHandle &nh, ros::NodeHandle &nh_private) = 0;
+
 protected:
-  detector_interface() { ROS_INFO("[detector_interface] Hello World"); }
+  detector_interface() { ROS_INFO("[detector_interface] Constructor"); }
 };
 
 }// namespace mood_base
