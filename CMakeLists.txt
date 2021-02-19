@@ -41,7 +41,7 @@ add_dependencies(blob_detector ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(blob_detector ${catkin_LIBRARIES})
 
-add_executable(detection_manager_node src/detection_manager.cpp)
+add_executable(detection_manager_node nodes/detection_manager.cpp)
 add_dependencies(detection_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(detection_manager_node ${catkin_LIBRARIES})
