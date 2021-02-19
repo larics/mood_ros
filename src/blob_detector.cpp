@@ -40,8 +40,13 @@ public:
     return true;
   }
 
+  bool needs_depth_image() override { return false; }
+  bool needs_rgb_image() override { return true; }
+  bool needs_pointcloud() override { return true; }
+
 private:
   bool m_is_initialized = false;
+  
 };
 }// namespace mood_plugin
 

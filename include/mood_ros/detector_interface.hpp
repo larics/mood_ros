@@ -39,13 +39,37 @@ public:
 
   /**
    * @brief Initialize the detector.
-   * 
+   *
    * @param nh A public ROS Node Handle.
    * @param nh_private A private ROS Node Handle.
    * @return true Detector initialization successful.
    * @return false Detector initialization successful.
    */
   virtual bool initialize(ros::NodeHandle &nh, ros::NodeHandle &nh_private) = 0;
+
+  /**
+   * @brief Check if the detector needs a depth image.
+   * 
+   * @return true Detector needs a depth image.
+   * @return false Detector does nod need a depth image.
+   */
+  virtual bool needs_depth_image() = 0;
+
+  /**
+   * @brief Check if the detector needs an rgb image.
+   * 
+   * @return true Detector needs an rgb image.
+   * @return false Detector does nod need an rgb image.
+   */
+  virtual bool needs_rgb_image() = 0;
+
+  /**
+   * @brief Check if the detector needs a pointcloud.
+   * 
+   * @return true Detector needs a pointcloud.
+   * @return false Detector does not need a pointcloud.
+   */
+  virtual bool needs_pointcloud() = 0;
 
 protected:
   detector_interface() { ROS_INFO("[detector_interface] Constructor"); }

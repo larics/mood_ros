@@ -20,11 +20,19 @@ struct sensor_info
 
   bool depth_available;
   sensor_msgs::Image depth_image;
+
+  void add(const sensor_msgs::PointCloud2 &t) {
+      pointcloud = t;
+  }
+
+  void add(const sensor_msgs::Image &t) {
+    rgb_image = t;
+  }
 };
 
 /**
  * @brief Response message from the detection update request.
- * 
+ *
  */
 struct detection_response
 {
@@ -32,6 +40,6 @@ struct detection_response
   std::string response;
 };
 
-}// namespace mood_comm
+}// namespace sensor_comm
 
 #endif /* SENSOR_COMM_HPP */
