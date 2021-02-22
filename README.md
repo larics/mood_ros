@@ -23,7 +23,7 @@ The *MOOD* manager consists of a ROS Message Synchronizer plugin and an Object D
 
 ### ROS Message Synchronizer
 In order to synchronize the needed sensor messages please provide a ROS message synchonization
-implementation of the [msg_sync_interface.hpp](include/mood_ros/msg_sync_interface.hpp) interface.
+implementation of the [msg_sync_interface.hpp](include/mood_ros/msg_sync_interface.hpp) interface.  
 **NOTE** If there is need for synchronization of more than three ROS messages or other ROS message types, please augment the ```sensor_comm::sensor_info``` structure in [sensor_comm.hpp](include/mood_ros/sensor_comm.hpp) header.
 
 
