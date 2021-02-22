@@ -7,8 +7,18 @@ using the [ROS plugin](http://wiki.ros.org/pluginlib/Tutorials/Writing%20and%20U
 
 ## Dependencies
 
+### ROS Packages
 * [uav_ros_lib](https://github.com/lmark1/uav_ros_lib)
  
+### External packages
+* OpenCV
+* PCL
+
+## Description
+<p float="left">
+    <img src=".fig/mood_fig.png" width="800" title="Windturbine ICP." />
+</p>
+
 ## FAQ
 
 ### What are ROS Plugins?
