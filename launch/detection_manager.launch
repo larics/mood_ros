@@ -2,6 +2,9 @@
   <arg name="namespace" default="$(env UAV_NAMESPACE)"/>
   <arg name="manager_config" default="$(find mood_ros)/config/detection_manager_config.yaml"/>
   <arg name="blob_config" default="$(find mood_ros)/config/blob_detector_config.yaml"/>
+  <arg name="image" default="camera/color/image_raw"/>
+  <arg name="pointcloud" default="camera/depth_registered/points"/>
+  <arg name="depth" default="camera/color/image_raw/compressedDetph"/>
 
   <node pkg="mood_ros" name="detection_manager_node" 
     type="detection_manager_node" output="screen" ns="$(arg namespace)">
@@ -11,6 +14,11 @@
 
     <!-- Blob detector -->
     <rosparam command="load" file="$(arg blob_config)"/>
+
+    <!-- syncronizer remaps -->
+    <remap from="image" to="$(arg image)"/>
+    <remap from="depth" to="$(arg depth)"/>
+    <remap from="pointcloud" to="$(arg pointcloud)"/>
   </node>
   
 </launch>
