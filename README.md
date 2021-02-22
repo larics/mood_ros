@@ -30,7 +30,7 @@ implementation of the [msg_sync_interface.hpp](include/mood_ros/msg_sync_interfa
 ### Object Detector
 In order to add a new object detector plugin please provide a concrete implementation of the [detector_interface.hpp](include/mood_ros/detector_interface.hpp) interface.
 
-### MODD Manager
+### MOOD Manager
 A node which dynamically loads and connects one ROS Message Synchronizer and one Object Detector defined by the given configuration file.
 ## FAQ
 
