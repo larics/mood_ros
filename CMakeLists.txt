@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 # Find catkin macros and libraries if COMPONENTS list like find_package(catkin REQUIRED
 # COMPONENTS xyz) is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure pluginlib uav_ros_lib
-                                        message_filters)
+                                        message_filters image_transport)
 
 # System dependencies are found with CMake's conventions find_package(Boost REQUIRED
 # COMPONENTS system)
@@ -74,7 +74,7 @@ target_link_libraries(detection_manager_node ${catkin_LIBRARIES})
 # Mark executables and/or libraries for installation
 
 install(
-  TARGETS blob_detector
+  TARGETS blob_detector single_msg_sync double_msg_sync
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

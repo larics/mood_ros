@@ -6,6 +6,12 @@
 
 <library path="lib/libsingle_msg_sync">
   <class name="PointcloudSync" type="mood_plugin::PointcloudSync" base_class_type="mood_base::msg_sync_interface">
-    <description>A BlobDetector plugin.</description>
+    <description>A single sensor_msgs::Pointcloud2 synchronizer.</description>
+  </class>
+</library>
+
+<library path="lib/libdouble_msg_sync">
+  <class name="PointcloudRGBSync" type="mood_plugin::PointcloudRGBSync" base_class_type="mood_base::msg_sync_interface">
+    <description>A double sensor_msgs::Pointcloud2 and sensor_msgs::Image synchronizer.</description>
   </class>
 </library>
