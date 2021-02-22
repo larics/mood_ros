@@ -5,7 +5,7 @@
 </library>
 
 <library path="lib/libsingle_msg_sync">
-  <class name="PointcloudSynchronization" type="mood_plugin::PointcloudSynchronization" base_class_type="mood_base::msg_sync_interface">
+  <class name="PointcloudSync" type="mood_plugin::PointcloudSync" base_class_type="mood_base::msg_sync_interface">
     <description>A BlobDetector plugin.</description>
   </class>
 </library>

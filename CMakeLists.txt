@@ -6,7 +6,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 # Find catkin macros and libraries if COMPONENTS list like find_package(catkin REQUIRED
 # COMPONENTS xyz) is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure pluginlib uav_ros_lib message_filters)
+find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure pluginlib uav_ros_lib
+                                        message_filters)
 
 # System dependencies are found with CMake's conventions find_package(Boost REQUIRED
 # COMPONENTS system)
@@ -44,11 +45,15 @@ add_dependencies(blob_detector ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(blob_detector ${catkin_LIBRARIES})
 
-
 add_library(single_msg_sync src/single_msg_sync.cpp)
 add_dependencies(single_msg_sync ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(single_msg_sync ${catkin_LIBRARIES})
+
+add_library(double_msg_sync src/double_msg_sync.cpp)
+add_dependencies(double_msg_sync ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                 ${catkin_EXPORTED_TARGETS})
+target_link_libraries(double_msg_sync ${catkin_LIBRARIES})
 
 add_executable(detection_manager_node nodes/detection_manager.cpp)
 add_dependencies(detection_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS}

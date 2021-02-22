@@ -17,19 +17,27 @@ public:
   using cb_t = std::function<void(const sensor_comm::sensor_info &)>;
 
   /**
-   * @brief Register syncrhonized callback carrying all obtained sensor information.
+   * @brief Register a callback to process all synchronized sensor information.
    *
    * @param callback A callback function carrying the sensor information
    */
   void register_callback(cb_t callback) { m_callback = std::move(callback); }
 
   /**
-   * @brief Forawrd sensor data to the registerered callback.
-   * 
-   * @param info 
+   * @brief Call this method when you are ready to forward sensor data to the registered
+   * callback.
+   *
+   * @param info
    */
   void add_sensor_data(const sensor_comm::sensor_info &info)
   {
+    ROS_INFO_COND(info.has_pointcloud,
+      "[msg_sync_interface::add_sensor_data] Forward pointcloud data.");
+    ROS_INFO_COND(
+      info.has_rgb, "[msg_sync_interface::add_sensor_data] Forward RGB data.");
+    ROS_INFO_COND(
+      info.has_depth, "[msg_sync_interface::add_sensor_data] Forward Depth data.");
+
     if (m_callback) {
       m_callback(info);
     } else {

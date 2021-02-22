@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   auto sync_plugin_loader =
     std::make_unique<sync_loader_t>("mood_ros", "mood_base::msg_sync_interface");
   auto synchronizer =
-    sync_plugin_loader->createUniqueInstance("PointcloudSynchronization");
+    sync_plugin_loader->createUniqueInstance("PointcloudSync");
   synchronizer->register_callback(
     [&](const sensor_comm::sensor_info &info) { auto success = detector->update(info); });
   std::vector<std::string> topic_names{ "pointcloud" };
