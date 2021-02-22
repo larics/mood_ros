@@ -28,8 +28,9 @@ int main(int argc, char **argv)
   ros::NodeHandle nh_private("~");
 
   // Load manager parameters
-  std::string detector_plugin_name;
+  std::string detector_plugin_name, synchronizer_plugin_name;
   param_util::getParamOrThrow(nh_private, "mood/detector", detector_plugin_name);
+  param_util::getParamOrThrow(nh_private, "mood/synchronizer", synchronizer_plugin_name);
 
   // Load detector plugin
   auto detector_plugin_loader =
@@ -46,8 +47,7 @@ int main(int argc, char **argv)
   // Load synchronization plugin
   auto sync_plugin_loader =
     std::make_unique<sync_loader_t>("mood_ros", "mood_base::msg_sync_interface");
-  auto synchronizer =
-    sync_plugin_loader->createUniqueInstance("PointcloudSync");
+  auto synchronizer = sync_plugin_loader->createUniqueInstance(synchronizer_plugin_name);
   synchronizer->register_callback(
     [&](const sensor_comm::sensor_info &info) { auto resp = detector->update(info); });
   auto sync_init = synchronizer->initialize(nh);
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     ROS_FATAL("[DetectionManager] Synchronizer initialization unsucessful!");
     return 1;
   }
-  
+
   ros::spin();
   return 0;
 }

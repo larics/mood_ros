@@ -1,2 +1,3 @@
 mood:
   detector: "BlobDetector"
+  synchronizer: "PointcloudRGBSync"
