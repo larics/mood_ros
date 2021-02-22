@@ -19,7 +19,7 @@ public:
       return { false, "[BlobDetector] Update unsuccessful, detector not initialized" };
     }
 
-    ROS_INFO("[BlobDetector] Update");
+    ROS_INFO_THROTTLE(5.0, "[BlobDetector] Update");
     return { true, "[BlobDetector] Update successful." };
   }
 

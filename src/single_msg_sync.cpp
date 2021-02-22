@@ -7,13 +7,13 @@ class PointcloudSync : public mood_base::msg_sync_interface
 {
 public:
   PointcloudSync() { ROS_INFO("[PointcloudSync] Constructor"); }
-  bool initialize(ros::NodeHandle &nh, std::vector<std::string> &topic_names) override
+  bool initialize(ros::NodeHandle &nh) override
   {
     try {
       m_sub_ptr = std::make_unique<message_filters::Subscriber<sensor_msgs::PointCloud2>>(
-        nh, topic_names.front(), 1);
+        nh, "pointcloud", 1);
       m_sub_ptr->registerCallback([&](const sensor_msgs::PointCloud2ConstPtr &msg) {
-        ROS_INFO("[PointcloudSync::m_sub_ptr::callback]");
+        ROS_INFO_THROTTLE(5.0, "[PointcloudSync::m_sub_ptr::callback]");
         sensor_comm::sensor_info info;
         info.has_pointcloud = true;
         info.pointcloud = *msg;

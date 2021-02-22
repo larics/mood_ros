@@ -31,12 +31,16 @@ public:
    */
   void add_sensor_data(const sensor_comm::sensor_info &info)
   {
-    ROS_INFO_COND(info.has_pointcloud,
-      "[msg_sync_interface::add_sensor_data] Forward pointcloud data.");
-    ROS_INFO_COND(
-      info.has_rgb, "[msg_sync_interface::add_sensor_data] Forward RGB data.");
-    ROS_INFO_COND(
-      info.has_depth, "[msg_sync_interface::add_sensor_data] Forward Depth data.");
+    if (info.has_pointcloud) {
+      ROS_INFO_THROTTLE(
+        5.0, "[msg_sync_interface::add_sensor_data] Forward pointcloud data.");
+    }
+    if (info.has_rgb) {
+      ROS_INFO_THROTTLE(5.0, "[msg_sync_interface::add_sensor_data] Forward RGB data.");
+    }
+    if (info.has_depth) {
+      ROS_INFO_THROTTLE(5.0, "[msg_sync_interface::add_sensor_data] Forward Depth data.");
+    }
 
     if (m_callback) {
       m_callback(info);
@@ -48,10 +52,9 @@ public:
   /**
    * @brief Initialize the synchronization interface.
    *
-   * @param nh A public ROS Node Handle.
-   * @param topic_names List of topic names used for subscription.
+   * @param nh A public ROS Node Handle
    */
-  virtual bool initialize(ros::NodeHandle &nh, std::vector<std::string> &topic_names) = 0;
+  virtual bool initialize(ros::NodeHandle &nh) = 0;
 
 protected:
   msg_sync_interface() { ROS_INFO("[msg_sync_interface] Constructor"); }

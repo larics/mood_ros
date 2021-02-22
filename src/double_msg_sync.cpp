@@ -19,14 +19,13 @@ public:
 
   PointcloudRGBSync() { ROS_INFO("[PointcloudRGBSync] Constructor"); }
 
-  bool initialize(ros::NodeHandle &nh, std::vector<std::string> &topic_names) override
+  bool initialize(ros::NodeHandle &nh) override
   {
     try {
 
       m_it_ptr = std::make_unique<image_transport::ImageTransport>(nh);
-      m_pointcloud_sub_ptr =
-        std::make_unique<PointcloudSub_t>(nh, topic_names.front(), 1);
-      m_image_sub_ptr = std::make_unique<ImageSub_t>(*m_it_ptr, topic_names.back(), 1);
+      m_pointcloud_sub_ptr = std::make_unique<PointcloudSub_t>(nh, "pointcloud", 1);
+      m_image_sub_ptr = std::make_unique<ImageSub_t>(*m_it_ptr, "image", 1);
       m_syncer_ptr = std::make_unique<Synchronizer>(
         PointcloudRGBPolicy(10), *m_pointcloud_sub_ptr, *m_image_sub_ptr);
       m_syncer_ptr->registerCallback(
@@ -42,7 +41,7 @@ private:
   void callback(const sensor_msgs::PointCloud2ConstPtr &cloud_msg,
     const sensor_msgs::ImageConstPtr &img_msg)
   {
-    ROS_INFO("[PointcloudRGBSync::callback]");
+    ROS_INFO_THROTTLE(5.0, "[PointcloudRGBSync::callback]");
     sensor_comm::sensor_info sensor_info;
     sensor_info.has_pointcloud = true;
     sensor_info.pointcloud = *cloud_msg;

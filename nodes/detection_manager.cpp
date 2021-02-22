@@ -49,9 +49,8 @@ int main(int argc, char **argv)
   auto synchronizer =
     sync_plugin_loader->createUniqueInstance("PointcloudSync");
   synchronizer->register_callback(
-    [&](const sensor_comm::sensor_info &info) { auto success = detector->update(info); });
-  std::vector<std::string> topic_names{ "pointcloud" };
-  auto sync_init = synchronizer->initialize(nh, topic_names);
+    [&](const sensor_comm::sensor_info &info) { auto resp = detector->update(info); });
+  auto sync_init = synchronizer->initialize(nh);
   if (!sync_init) {
     ROS_FATAL("[DetectionManager] Synchronizer initialization unsucessful!");
     return 1;
