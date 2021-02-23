@@ -48,8 +48,13 @@ int main(int argc, char **argv)
   auto sync_plugin_loader =
     std::make_unique<sync_loader_t>("mood_ros", "mood_base::msg_sync_interface");
   auto synchronizer = sync_plugin_loader->createUniqueInstance(synchronizer_plugin_name);
-  synchronizer->register_callback(
-    [&](const sensor_comm::sensor_info &info) { auto resp = detector->update(info); });
+  synchronizer->register_callback([&](const sensor_comm::sensor_info &info) {
+    auto resp = detector->update(info);
+    if (!resp.status) {
+      ROS_ERROR_STREAM(
+        "[DetectionManager] Detector failed with message: " << resp.response);
+    };
+  });
   auto sync_init = synchronizer->initialize(nh);
   if (!sync_init) {
     ROS_FATAL("[DetectionManager] Synchronizer initialization unsucessful!");
