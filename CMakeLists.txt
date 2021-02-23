@@ -39,13 +39,13 @@ catkin_package(
 
 # Specify additional locations of header files Your package locations should be listed
 # before other locations
-include_directories(include ${catkin_INCLUDE_DIRS}
+include_directories(include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS}
                     ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 
 add_library(blob_detector src/blob_detector.cpp)
 add_dependencies(blob_detector ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
-target_link_libraries(blob_detector ${catkin_LIBRARIES})
+target_link_libraries(blob_detector ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 add_library(single_msg_sync src/single_msg_sync.cpp)
 add_dependencies(single_msg_sync ${${PROJECT_NAME}_EXPORTED_TARGETS}
