@@ -1,7 +1,7 @@
 name: inspection
 root: ./
 startup_window: roscore
-pre_window: export UAV_NAMESPACE=red
+pre_window: export UAV_NAMESPACE=red; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/home/lmark/uav_ws/src/larics_gazebo_worlds/models
 windows:
   - roscore:
       layout: tiled
@@ -12,7 +12,7 @@ windows:
   - gazebo:
       layout: tiled
       panes:
-        - waitForRos; roslaunch ardupilot_gazebo kopterworx.launch use_sim_time:=true world:=$(rospack find larics_gazebo_worlds)/worlds/wall_inspection.world
+        - waitForRos; roslaunch ardupilot_gazebo kopterworx.launch use_sim_time:=true world:=$(rospack find larics_gazebo_worlds)/worlds/wall_with_circles_inspection.world
   - arm&takeof:
       layout: tiled
       panes:
