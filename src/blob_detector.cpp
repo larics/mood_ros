@@ -19,18 +19,32 @@ public:
       return { false, "[BlobDetector] Update unsuccessful, detector not initialized" };
     }
 
+    if (!sensor_info.has_rgb) {
+      return { false,
+        "[BlobDetector] Update unsuccessful, sensor_info missing RGB information." };
+    }
+
+    if (!sensor_info.has_pointcloud) {
+      return { false,
+        "[BlobDetector] Update unsuccessful, sensor_info missing pointcloud "
+        "information. " };
+    }
+
     ROS_INFO_THROTTLE(5.0, "[BlobDetector] Update");
+
     return { true, "[BlobDetector] Update successful." };
   }
 
   geometry_msgs::PoseArray get_object_poses() override
   {
     ROS_INFO("[BlobDetector] get_object_poses");
+    return {};
   }
 
   sensor_msgs::Image get_labeled_image() override
   {
     ROS_INFO("[BlobDetector] get_labeled_image");
+    return {};
   }
 
   bool initialize(ros::NodeHandle &nh, ros::NodeHandle &nh_private) override
@@ -42,7 +56,6 @@ public:
 
 private:
   bool m_is_initialized = false;
-  
 };
 }// namespace mood_plugin
 
