@@ -28,7 +28,9 @@ find_package(OpenCV REQUIRED)
 # dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  # LIBRARIES mood_ros CATKIN_DEPENDS other_catkin_pkg DEPENDS system_lib
+  LIBRARIES blob_detector single_msg_sync double_msg_sync
+  CATKIN_DEPENDS uav_ros_lib
+  DEPENDS OpenCV PCL
 )
 
 # ########################################################################################
