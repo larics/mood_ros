@@ -12,6 +12,17 @@
 
 namespace mood_plugin {
 
+struct Color
+{
+  static cv::Scalar RED;
+  static cv::Scalar WHITE;
+  static cv::Scalar BLACK;
+};
+
+cv::Scalar Color::RED(0, 0, 255);
+cv::Scalar Color::WHITE(255, 255, 255);
+cv::Scalar Color::BLACK(0, 0, 0);
+
 class BlobDetector : public mood_base::detector_interface
 {
 public:
@@ -50,7 +61,7 @@ public:
     if (m_blob_keypoints.empty()) {
       return { false, "[BlobDetector] No keypoints found. " };
     }
-    
+
     compute_keypoint_centroids(cv_image_ptr->image.rows, cv_image_ptr->image.cols);
 
     // cv_bridge::CvImage mask_img(header, "mono8", color_mask);
@@ -86,19 +97,19 @@ private:
     cv::drawKeypoints(cv_image_ptr->image,
       m_blob_keypoints,
       m_labeled_image,
-      cv::Scalar(0, 0, 255),
+      Color::RED,
       cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
   }
 
   void compute_keypoint_centroids(int image_rows, int image_cols)
   {
     // Go through all keypoints and find out their position
-    cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, cv::Scalar(0, 0, 0));
+    cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, Color::WHITE);
     for (const auto &keypoint : m_blob_keypoints) {
       cv::circle(debug_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 2.0,// keypoint.size is a diameter, not the radius
-        cv::Scalar(255, 255, 255),
+        keypoint.size / 2.0,  // keypoint.size is a diameter, not a radius. Duh...
+        Color::BLACK,
         -1);
     }
 
