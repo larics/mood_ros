@@ -1,3 +1,4 @@
+#include <memory>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
@@ -5,10 +6,18 @@
 #include <mood_ros/BlobDetectorParamsConfig.h>
 #include <mood_ros/detector_interface.hpp>
 
+// OpenCV Includes
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
+
+// PCL Includes
+
+#include <pcl_ros/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/common/intersections.h>
+#include <pcl/point_types.h>
 
 namespace mood_plugin {
 
@@ -22,6 +31,8 @@ struct Color
 cv::Scalar Color::RED(0, 0, 255);
 cv::Scalar Color::WHITE(255, 255, 255);
 cv::Scalar Color::BLACK(0, 0, 0);
+
+using Pointcloud_t = pcl::PointCloud<pcl::PointXYZ>;
 
 class BlobDetector : public mood_base::detector_interface
 {
@@ -55,6 +66,8 @@ public:
     // Convert the image to OpencCV
     auto cv_image_ptr =
       cv_bridge::toCvCopy(sensor_info.rgb_image, sensor_msgs::image_encodings::BGR8);
+    auto pcl_msg = boost::make_shared<Pointcloud_t>();
+    pcl::fromROSMsg(sensor_info.pointcloud, *pcl_msg);
 
     do_blob_detection(cv_image_ptr);
 
@@ -63,6 +76,7 @@ public:
     }
 
     compute_keypoint_centroids(cv_image_ptr->image.rows, cv_image_ptr->image.cols);
+
 
     // cv_bridge::CvImage mask_img(header, "mono8", color_mask);
     return { true, "[BlobDetector] Update successful." };
@@ -104,12 +118,12 @@ private:
   void compute_keypoint_centroids(int image_rows, int image_cols)
   {
     // Go through all keypoints and find out their position
-    cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, Color::WHITE);
+    cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, Color::BLACK);
     for (const auto &keypoint : m_blob_keypoints) {
       cv::circle(debug_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
         keypoint.size / 2.0,  // keypoint.size is a diameter, not a radius. Duh...
-        Color::BLACK,
+        Color::WHITE,
         -1);
     }
 
