@@ -1,7 +1,7 @@
 name: inspection
 root: ./
 startup_window: roscore
-pre_window: export UAV_NAMESPACE=red; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/home/lmark/uav_ws/src/larics_gazebo_worlds/models
+pre_window: export UAV_NAMESPACE=red; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
 windows:
   - roscore:
       layout: tiled
@@ -26,3 +26,5 @@ windows:
       layout: tiled
       panes:
         - source ~/detection_ws/devel/setup.zsh; waitForRos; roslaunch mood_ros detection_manager.launch
+        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; rosrun rqt_gui rqt_gui --perspective-file $(rospack find mood_ros)/config/blob_detector_rqt_sim.perspective
+        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; rosrun rviz rviz -d $(rospack find mood_ros)/config/blob_detection_sim.rviz
