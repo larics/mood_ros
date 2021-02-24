@@ -37,7 +37,9 @@ using Pointcloud_t = pcl::PointCloud<pcl::PointXYZ>;
 class BlobDetector : public mood_base::detector_interface
 {
 public:
-  BlobDetector() : m_blob_detector_ptr(cv::SimpleBlobDetector::create())
+  BlobDetector()
+    : m_blob_detector_ptr(cv::SimpleBlobDetector::create()),
+      m_cloud_ptr(boost::make_shared<Pointcloud_t>())
   {
     ROS_INFO("[BlobDetector] Constructor");
   }
@@ -64,18 +66,25 @@ public:
     ROS_INFO_THROTTLE(5.0, "[BlobDetector] Update");
 
     // Convert the image to OpencCV
-    auto cv_image_ptr =
+    m_cvimage_ptr =
       cv_bridge::toCvCopy(sensor_info.rgb_image, sensor_msgs::image_encodings::BGR8);
-    auto pcl_msg = boost::make_shared<Pointcloud_t>();
-    pcl::fromROSMsg(sensor_info.pointcloud, *pcl_msg);
+    pcl::fromROSMsg(sensor_info.pointcloud, *m_cloud_ptr);
 
-    do_blob_detection(cv_image_ptr);
+    if (!m_cvimage_ptr) {
+      return { false, "[BlobDetector] Image conversion to CVImage failed." };
+    }
+
+    if (!m_cloud_ptr) {
+      return { false, "[BlobDetector] Pointcloud conversion to PCL failed." };
+    }
+
+    do_blob_detection(m_cvimage_ptr);
 
     if (m_blob_keypoints.empty()) {
       return { false, "[BlobDetector] No keypoints found. " };
     }
 
-    compute_keypoint_centroids(cv_image_ptr->image.rows, cv_image_ptr->image.cols);
+    compute_blob_centroids(m_cvimage_ptr->image.rows, m_cvimage_ptr->image.cols);
 
 
     // cv_bridge::CvImage mask_img(header, "mono8", color_mask);
@@ -115,14 +124,26 @@ private:
       cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
   }
 
-  void compute_keypoint_centroids(int image_rows, int image_cols)
+  geometry_msgs::Pose compute_blob_sentroid() {}
+
+  void compute_blob_centroids(int image_rows, int image_cols)
   {
     // Go through all keypoints and find out their position
     cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, Color::BLACK);
     for (const auto &keypoint : m_blob_keypoints) {
+      cv::Mat one_blob_mask(image_rows, image_cols, CV_8UC1, Color::BLACK);
+
+      // Draw a circle for the debug mask
       cv::circle(debug_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 2.0,  // keypoint.size is a diameter, not a radius. Duh...
+        keypoint.size / 2.0,// keypoint.size is a diameter, not a radius. Duh...
+        Color::WHITE,
+        -1);
+
+      // Draw a circle for the one blob mask
+      cv::circle(one_blob_mask,
+        cv::Point(keypoint.pt.x, keypoint.pt.y),
+        keypoint.size / 5.0,
         Color::WHITE,
         -1);
     }
@@ -144,6 +165,10 @@ private:
   /* Image transport for debugging */
   std::unique_ptr<image_transport::ImageTransport> m_it_ptr;
   image_transport::Publisher m_mask_debug_pub;
+
+  /* Sensor information ptrs */
+  cv_bridge::CvImagePtr m_cvimage_ptr;
+  Pointcloud_t::Ptr m_cloud_ptr;
 };
 }// namespace mood_plugin
 
