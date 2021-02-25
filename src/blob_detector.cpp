@@ -1,6 +1,7 @@
 #include <memory>
 #include <cmath>
 
+// ROS Includes
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
@@ -8,9 +9,11 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 
-// ROS packages
+// ROS package includes
 #include <uav_ros_lib/param_util.hpp>
+#include <uav_ros_lib/reconfigure_handler.hpp>
 #include <mood_ros/detector_interface.hpp>
+#include <mood_ros/BlobDetectorParamsConfig.h>
 
 // OpenCV Includes
 #include <opencv2/opencv.hpp>
@@ -38,6 +41,8 @@ cv::Scalar Color::WHITE(255, 255, 255);
 cv::Scalar Color::BLACK(0, 0, 0);
 
 using Pointcloud_t = pcl::PointCloud<pcl::PointXYZ>;
+using BlobDetectorParams_t = mood_ros::BlobDetectorParamsConfig;
+using BlobDetectorReCfg_t = ros_util::ReconfigureHandler<BlobDetectorParams_t>;
 
 class BlobDetector : public mood_base::detector_interface
 {
@@ -130,17 +135,36 @@ public:
     m_it_ptr = std::make_unique<image_transport::ImageTransport>(nh);
     m_mask_debug_pub = m_it_ptr->advertise("mood/blob_detector/debug/mask", 1);
 
+    BlobDetectorParams_t params;
     try {
       param_util::getParamOrThrow(nh_private, "blob_detector/base_link", m_base_link);
       param_util::getParamOrThrow(nh_private, "blob_detector/camera_link", m_camera_link);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/filter_by_area", params.filter_by_area);
+      param_util::getParamOrThrow(nh_private, "blob_detector/min_area", params.min_area);
+      param_util::getParamOrThrow(nh_private, "blob_detector/max_area", params.max_area);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/filter_by_color", params.filter_by_color);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/blob_color", params.blob_color);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/filter_by_circularity", params.filter_by_circularity);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/min_circularity", params.min_circularity);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/max_circularity", params.max_circularity);
     } catch (std::runtime_error &e) {
       ROS_ERROR_STREAM("[BlobDetector] Parameter initialization failed " << e.what());
       return false;
     }
 
+    // Add namespace prefixes
     m_base_link = nh.getNamespace() + m_base_link;
     m_camera_link = nh.getNamespace() + m_camera_link;
 
+    // Setup reconfigure handler
+    m_blob_param_handler_ptr =
+      std::make_unique<BlobDetectorReCfg_t>(params, "mood/blob_detector");
     return true;
   }
 
@@ -173,7 +197,24 @@ private:
 
   void do_blob_detection(const cv_bridge::CvImagePtr &cv_image_ptr)
   {
+    // Clear existing keypoints
     m_blob_keypoints.clear();
+
+    // Get params from reconfigure handler
+    auto reconf_params = m_blob_param_handler_ptr->getData();
+    auto blob_params = cv::SimpleBlobDetector::Params();
+
+    // Set corresponding parameters
+    blob_params.filterByArea = reconf_params.filter_by_area;
+    blob_params.minArea = reconf_params.min_area;
+    blob_params.maxArea = reconf_params.max_area;
+    blob_params.filterByCircularity = reconf_params.filter_by_circularity;
+    blob_params.minCircularity = reconf_params.min_circularity;
+    blob_params.maxCircularity = reconf_params.max_circularity;
+    blob_params.filterByColor = reconf_params.filter_by_color;
+    blob_params.blobColor = reconf_params.blob_color;
+    m_blob_detector_ptr = cv::SimpleBlobDetector::create(blob_params);
+
     m_blob_detector_ptr->detect(cv_image_ptr->image, m_blob_keypoints);
     cv::drawKeypoints(cv_image_ptr->image,
       m_blob_keypoints,
@@ -258,6 +299,8 @@ private:
   bool m_is_initialized = false;
   std::string m_camera_link;
   std::string m_base_link;
+  std::unique_ptr<BlobDetectorReCfg_t> m_blob_param_handler_ptr;
+
   cv::Ptr<cv::SimpleBlobDetector> m_blob_detector_ptr;
 
   /* Blob label information */
