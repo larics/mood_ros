@@ -11,6 +11,7 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
         - /PointCloud22
+        - /PoseArray1
       Splitter Ratio: 0.4153846204280853
     Tree Height: 806
   - Class: rviz/Selection
@@ -176,6 +177,22 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Alpha: 1
+      Arrow Length: 0.5
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Arrow (Flat)
+      Topic: /red/mood/poses
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -204,25 +221,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 15.783961296081543
+      Distance: 18.4143123626709
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.26023924350738525
-        Y: -3.85551118850708
-        Z: 4.168002605438232
+        X: 4.8932695388793945
+        Y: 3.8823344707489014
+        Z: 0.7145625352859497
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6597965955734253
+      Pitch: 0.7747966051101685
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.4464988708496094
+      Yaw: 3.676499128341675
     Saved: ~
 Window Geometry:
   Displays:
