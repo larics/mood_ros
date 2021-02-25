@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Find catkin macros and libraries if COMPONENTS list like find_package(catkin REQUIRED
 # COMPONENTS xyz) is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure pluginlib uav_ros_lib
-                                        message_filters image_transport)
+                                        message_filters image_transport tf)
 
 # System dependencies are found with CMake's conventions find_package(Boost REQUIRED
 # COMPONENTS system)

@@ -4,8 +4,12 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
+#include <tf/tf.h>
+#include <tf2_ros/transform_listener.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 
+// ROS packages
+#include <uav_ros_lib/param_util.hpp>
 #include <mood_ros/detector_interface.hpp>
 
 // OpenCV Includes
@@ -15,7 +19,6 @@
 #include <image_transport/image_transport.h>
 
 // PCL Includes
-
 #include <pcl_ros/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/common/intersections.h>
@@ -42,10 +45,9 @@ public:
   BlobDetector()
     : m_blob_detector_ptr(cv::SimpleBlobDetector::create()),
       m_cloud_ptr(boost::make_shared<Pointcloud_t>()),
-      m_cvimage_ptr(boost::make_shared<cv_bridge::CvImage>())
+      m_cvimage_ptr(boost::make_shared<cv_bridge::CvImage>()), m_tf_listener(m_tf_buffer)
   {
     ROS_INFO("[BlobDetector] Constructor");
-    m_camera_to_base_link.setRPY(-1.57, 0, -1.57);
   }
 
   sensor_comm::detection_response update(
@@ -65,6 +67,15 @@ public:
       return { false,
         "[BlobDetector] Update unsuccessful, sensor_info missing pointcloud "
         "information. " };
+    }
+
+    // Try to get a transform
+    if (!m_is_transform_initialized) {
+      auto [transform_success, message] = initialize_transform();
+      if (!transform_success) { return { false, message }; }
+
+      // Otherwise transform initialization was successful
+      m_is_transform_initialized = true;
     }
 
     ROS_INFO_THROTTLE(5.0, "[BlobDetector] Update");
@@ -118,10 +129,48 @@ public:
 
     m_it_ptr = std::make_unique<image_transport::ImageTransport>(nh);
     m_mask_debug_pub = m_it_ptr->advertise("mood/blob_detector/debug/mask", 1);
+
+    try {
+      param_util::getParamOrThrow(nh_private, "blob_detector/base_link", m_base_link);
+      param_util::getParamOrThrow(nh_private, "blob_detector/camera_link", m_camera_link);
+    } catch (std::runtime_error &e) {
+      ROS_ERROR_STREAM("[BlobDetector] Parameter initialization failed " << e.what());
+      return false;
+    }
+
+    m_base_link = nh.getNamespace() + m_base_link;
+    m_camera_link = nh.getNamespace() + m_camera_link;
+
     return true;
   }
 
 private:
+  std::tuple<bool, std::string> initialize_transform()
+  {
+    try {
+      auto m_camera_to_base_link =
+        m_tf_buffer.lookupTransform("red/base_link", "red/camera", ros::Time(0));
+
+      // Save the obtained transform
+      m_camera_to_base_link_trans =
+        Eigen::Vector3f(m_camera_to_base_link.transform.translation.x,
+          m_camera_to_base_link.transform.translation.y,
+          m_camera_to_base_link.transform.translation.z);
+      m_camera_to_base_link_rot =
+        Eigen::Quaternionf(m_camera_to_base_link.transform.rotation.w,
+          m_camera_to_base_link.transform.rotation.x,
+          m_camera_to_base_link.transform.rotation.y,
+          m_camera_to_base_link.transform.rotation.z);
+    } catch (std::runtime_error &e) {
+      std::string message;
+      message += "[BlobDetector] Transform initialization failed with message ";
+      message += e.what();
+      return { false, message };
+    }
+
+    return { true, "[BlobDetector] Transform initialization successful." };
+  }
+
   void do_blob_detection(const cv_bridge::CvImagePtr &cv_image_ptr)
   {
     m_blob_keypoints.clear();
@@ -136,7 +185,7 @@ private:
   std::tuple<geometry_msgs::Pose, bool> compute_blob_centroid(
     const cv::Mat &one_blob_mask)
   {
-    tf2::Vector3 blob_pose{0, 0, 0};
+    Eigen::Vector3f blob_pose{ 0, 0, 0 };
     int count = 0;
     for (int i = 0; i < one_blob_mask.rows; i++) {
       for (int j = 0; j < one_blob_mask.cols; j++) {
@@ -144,23 +193,24 @@ private:
 
         count++;
         auto point = m_cloud_ptr->at(j, i);
-        blob_pose += tf2::Vector3{point.x, point.y, point.z};
+        blob_pose += Eigen::Vector3f{ point.x, point.y, point.z };
       }
     }
 
     blob_pose /= count;
 
-    if (!(std::isfinite(blob_pose.getX()) || std::isfinite(blob_pose.getY())
-          || std::isfinite(blob_pose.getZ()))) {
+    if (!(std::isfinite(blob_pose(0)) || std::isfinite(blob_pose(1))
+          || std::isfinite(blob_pose(2)))) {
       return { geometry_msgs::Pose{}, false };
     }
 
-    blob_pose = m_camera_to_base_link * blob_pose;
+    blob_pose = m_camera_to_base_link_rot * blob_pose;
+    blob_pose += m_camera_to_base_link_trans;
 
     geometry_msgs::Pose new_blob_pose;
-    new_blob_pose.position.x = blob_pose.x();
-    new_blob_pose.position.y = blob_pose.y();
-    new_blob_pose.position.z = blob_pose.z();
+    new_blob_pose.position.x = blob_pose(0);
+    new_blob_pose.position.y = blob_pose(1);
+    new_blob_pose.position.z = blob_pose(2);
     new_blob_pose.orientation.x = 0;
     new_blob_pose.orientation.y = 0;
     new_blob_pose.orientation.z = 0;
@@ -204,8 +254,10 @@ private:
     m_mask_debug_pub.publish(debug_mask_cvimage.toImageMsg());
   }
 
+  /* General Blob Detector infoo */
   bool m_is_initialized = false;
-  tf2::Matrix3x3 m_camera_to_base_link;
+  std::string m_camera_link;
+  std::string m_base_link;
   cv::Ptr<cv::SimpleBlobDetector> m_blob_detector_ptr;
 
   /* Blob label information */
@@ -220,6 +272,13 @@ private:
   /* Sensor information ptrs */
   cv_bridge::CvImagePtr m_cvimage_ptr;
   Pointcloud_t::Ptr m_cloud_ptr;
+
+  /* Camera to base link transform information */
+  bool m_is_transform_initialized;
+  Eigen::Quaternionf m_camera_to_base_link_rot;
+  Eigen::Vector3f m_camera_to_base_link_trans;
+  tf2_ros::Buffer m_tf_buffer;
+  tf2_ros::TransformListener m_tf_listener;
 };
 }// namespace mood_plugin
 
