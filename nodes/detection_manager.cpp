@@ -52,7 +52,6 @@ int main(int argc, char **argv)
     if (!resp.status) {
       ROS_ERROR_STREAM(
         "[DetectionManager] Detector failed with message: " << resp.response);
-      return;
     };
 
     // Detection is successful, publish topics
