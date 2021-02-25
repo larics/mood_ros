@@ -26,6 +26,9 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/common/intersections.h>
 #include <pcl/point_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
 
 namespace mood_plugin {
 
@@ -58,6 +61,9 @@ public:
   sensor_comm::detection_response update(
     const sensor_comm::sensor_info &sensor_info) override
   {
+    // Clear current blob poses
+    m_blob_poses.poses.clear();
+
     if (!m_is_initialized) {
       ROS_ERROR("[BlobDetector] Not initialized!");
       return { false, "[BlobDetector] Update unsuccessful, detector not initialized" };
@@ -101,6 +107,7 @@ public:
     do_blob_detection(m_cvimage_ptr);
 
     if (m_blob_keypoints.empty()) {
+      m_labeled_image = m_cvimage_ptr->image;
       return { false, "[BlobDetector] No keypoints found. " };
     }
 
@@ -223,47 +230,72 @@ private:
       cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
   }
 
+  Eigen::Quaternionf compute_blob_orientation(const Pointcloud_t::Ptr &blob_pointcloud)
+  {
+    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    seg.setOptimizeCoefficients(true);
+    seg.setModelType(pcl::SACMODEL_PLANE);
+    seg.setMethodType(pcl::SAC_PROSAC);
+    seg.setMaxIterations(100);
+    seg.setDistanceThreshold(0.1);
+    seg.setInputCloud(blob_pointcloud);
+
+    auto inliers = boost::make_shared<pcl::PointIndices>();
+    auto coefficients = boost::make_shared<pcl::ModelCoefficients>();
+    seg.segment(*inliers, *coefficients);
+
+    Eigen::Vector3f model_normal{
+      coefficients->values.at(0), coefficients->values.at(1), coefficients->values.at(2)
+    };
+    model_normal = m_camera_to_base_link_rot * model_normal;
+    model_normal.normalize();
+
+    Eigen::Quaternionf orientation(Eigen::AngleAxisf(
+      atan2(model_normal(1), model_normal(0)), Eigen::Vector3f::UnitZ()));
+    return orientation;
+  }
+
   std::tuple<geometry_msgs::Pose, bool> compute_blob_centroid(
     const cv::Mat &one_blob_mask)
   {
-    Eigen::Vector3f blob_pose{ 0, 0, 0 };
+    Eigen::Vector3f blob_position{ 0, 0, 0 };
+    auto blob_pointcloud = boost::make_shared<Pointcloud_t>();
     int count = 0;
     for (int i = 0; i < one_blob_mask.rows; i++) {
       for (int j = 0; j < one_blob_mask.cols; j++) {
         if (one_blob_mask.at<unsigned char>(i, j) == 0) { continue; }
 
         count++;
-        auto point = m_cloud_ptr->at(j, i);
-        blob_pose += Eigen::Vector3f{ point.x, point.y, point.z };
+        auto &point = m_cloud_ptr->at(j, i);
+        blob_pointcloud->push_back(point);
+        blob_position += Eigen::Vector3f{ point.x, point.y, point.z };
       }
     }
 
-    blob_pose /= count;
+    blob_position /= count;
 
-    if (!(std::isfinite(blob_pose(0)) || std::isfinite(blob_pose(1))
-          || std::isfinite(blob_pose(2)))) {
+    if (!(std::isfinite(blob_position(0)) || std::isfinite(blob_position(1))
+          || std::isfinite(blob_position(2)))) {
       return { geometry_msgs::Pose{}, false };
     }
 
-    blob_pose = m_camera_to_base_link_rot * blob_pose;
-    blob_pose += m_camera_to_base_link_trans;
+    blob_position = m_camera_to_base_link_rot * blob_position;
+    blob_position += m_camera_to_base_link_trans;
+    auto blob_orientation = compute_blob_orientation(blob_pointcloud);
 
     geometry_msgs::Pose new_blob_pose;
-    new_blob_pose.position.x = blob_pose(0);
-    new_blob_pose.position.y = blob_pose(1);
-    new_blob_pose.position.z = blob_pose(2);
-    new_blob_pose.orientation.x = 0;
-    new_blob_pose.orientation.y = 0;
-    new_blob_pose.orientation.z = 0;
-    new_blob_pose.orientation.w = 1;
+    new_blob_pose.position.x = blob_position(0);
+    new_blob_pose.position.y = blob_position(1);
+    new_blob_pose.position.z = blob_position(2);
+    new_blob_pose.orientation.x = blob_orientation.x();
+    new_blob_pose.orientation.y = blob_orientation.y();
+    new_blob_pose.orientation.z = blob_orientation.z();
+    new_blob_pose.orientation.w = blob_orientation.w();
     return { new_blob_pose, true };
   }
 
   void compute_blob_centroids(int image_rows, int image_cols)
   {
-    // Clear current blob poses
-    m_blob_poses.poses.clear();
-
     // Go through all keypoints and find out their position
     cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, Color::BLACK);
     for (const auto &keypoint : m_blob_keypoints) {
@@ -272,14 +304,14 @@ private:
       // Draw a circle for the debug mask
       cv::circle(debug_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 3.0,// keypoint.size is a diameter, not a radius. Duh...
+        keypoint.size / 2.0,// keypoint.size is a diameter, not a radius. Duh...
         Color::WHITE,
         -1);
 
       // Draw a circle for the one blob mask
       cv::circle(one_blob_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 3.0,
+        keypoint.size / 2.0,
         Color::WHITE,
         -1);
 
@@ -322,7 +354,7 @@ private:
   Eigen::Vector3f m_camera_to_base_link_trans;
   tf2_ros::Buffer m_tf_buffer;
   tf2_ros::TransformListener m_tf_listener;
-};
+};// namespace mood_plugin
 }// namespace mood_plugin
 
 #include <pluginlib/class_list_macros.h>
