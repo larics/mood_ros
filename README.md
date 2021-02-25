@@ -23,15 +23,14 @@ The *MOOD* manager consists of a ROS Message Synchronizer plugin and an Object D
 
 ### ROS Message Synchronizer
 In order to synchronize the needed sensor messages please provide a ROS message synchonization
-implementation of the [msg_sync_interface.hpp](include/mood_ros/msg_sync_interface.hpp) interface.  
-**NOTE** If there is need for synchronization of more than three ROS messages or other ROS message types, please augment the ```sensor_comm::sensor_info``` structure in [sensor_comm.hpp](include/mood_ros/sensor_comm.hpp) header.
-
+implementation of the ```mood_base::msg_sync_interface``` in [msg_sync_interface.hpp](include/mood_ros/msg_sync_interface.hpp).  
+**NOTE** If there is need for synchronization of more than three ROS messages or other ROS message types, please augment the ```sensor_comm::sensor_info``` structure in [sensor_comm.hpp](include/mood_ros/sensor_comm.hpp).
 
 ### Object Detector
-In order to add a new object detector plugin please provide a concrete implementation of the [detector_interface.hpp](include/mood_ros/detector_interface.hpp) interface.
+In order to add a new object detector plugin please provide a concrete implementation of the ```mood_base::detector_interface``` in[detector_interface.hpp](include/mood_ros/detector_interface.hpp).
 
 ### MOOD Manager
-A node which dynamically loads and connects one ROS Message Synchronizer plugin and one Object Detector plugin defined by the given configuration file.
+A node which dynamically loads and connects one ROS Message Synchronizer plugin and one Object Detector plugin defined by the given configuration file (e.g. [detection_manager_config.yaml](config/detection_manager_config.yaml)).
 ## FAQ
 
 ### What are ROS Plugins?
