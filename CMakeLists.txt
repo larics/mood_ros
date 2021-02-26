@@ -69,7 +69,7 @@ target_link_libraries(double_msg_sync ${catkin_LIBRARIES})
 add_executable(detection_manager_node nodes/detection_manager.cpp)
 add_dependencies(detection_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
-target_link_libraries(detection_manager_node ${catkin_LIBRARIES})
+target_link_libraries(detection_manager_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 # Rename C++ executable without prefix The above recommended prefix causes long target
 # names, the following renames the target back to the shorter version for ease of user use

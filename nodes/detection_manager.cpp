@@ -10,10 +10,19 @@
 
 #include <mood_ros/detector_interface.hpp>
 #include <mood_ros/msg_sync_interface.hpp>
+#include <mood_ros/detection_tracker.hpp>
 #include <uav_ros_lib/param_util.hpp>
+
+double pose_distance(const geometry_msgs::Pose &p1, const geometry_msgs::Pose &p2)
+{
+  return sqrt((p1.position.x - p2.position.x) * (p1.position.x - p2.position.x)
+              + (p1.position.y - p2.position.y) * (p1.position.y - p2.position.y)
+              + (p1.position.z - p2.position.z) * (p1.position.z - p2.position.z));
+}
 
 using detector_loader_t = pluginlib::ClassLoader<mood_base::detector_interface>;
 using sync_loader_t = pluginlib::ClassLoader<mood_base::msg_sync_interface>;
+using PoseTracker = mood_tracker::DetectionTracker<geometry_msgs::Pose>;
 
 int main(int argc, char **argv)
 {
@@ -64,6 +73,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  PoseTracker pose_tracker(50, pose_distance);
   ros::spin();
   return 0;
 }
