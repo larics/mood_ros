@@ -25,6 +25,6 @@ windows:
   - detection:
       layout: tiled
       panes:
-        - source ~/detection_ws/devel/setup.zsh; waitForRos; roslaunch mood_ros detection_manager.launch
-        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; rosrun rqt_gui rqt_gui --perspective-file $(rospack find mood_ros)/config/blob_detector_rqt_sim.perspective
-        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; rosrun rviz rviz -d $(rospack find mood_ros)/config/blob_detector_sim.rviz
+        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; roslaunch mood_ros detection_manager.launch
+        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; sleep 2; rosrun rqt_gui rqt_gui --perspective-file $(rospack find mood_ros)/config/blob_detector_rqt_sim.perspective
+        - source ~/detection_ws/devel/setup.zsh; waitForRos; waitForSimulation; sleep 2; rosrun rviz rviz -d $(rospack find mood_ros)/config/blob_detector_sim.rviz

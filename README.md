@@ -21,6 +21,9 @@ The *MOOD* manager consists of a ROS Message Synchronizer plugin and an Object D
     <img src=".fig/mood_fig.png" width="800" title="Windturbine ICP." />
 </p>
 
+*TODO*: Add CentroidTracker<T> to the image
+*TODO*: Think about how to pluginize the tracker
+
 ### ROS Message Synchronizer
 In order to synchronize the needed sensor messages please provide a ROS message synchonization
 implementation of the ```mood_base::msg_sync_interface``` in [msg_sync_interface.hpp](include/mood_ros/msg_sync_interface.hpp).  

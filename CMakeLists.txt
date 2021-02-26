@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mood_ros)
 
-# Compile as C++11, supported in ROS Kinetic and newer add_compile_options(-std=c++11)
+# NOTE: The following three lines are needed to force compile PCL with -std=c++17
+# see issue https://github.com/PointCloudLibrary/pcl/issues/2686
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
