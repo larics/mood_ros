@@ -21,7 +21,7 @@ The *MOOD* manager consists of a ROS Message Synchronizer plugin and an Object D
     <img src=".fig/mood_fig.png" width="800" title="Windturbine ICP." />
 </p>
 
-*TODO*: Add CentroidTracker<T> to the image
+*TODO*: Add CentroidTracker<T> to the image  
 *TODO*: Think about how to pluginize the tracker
 
 ### ROS Message Synchronizer
