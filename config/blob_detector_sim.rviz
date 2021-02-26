@@ -12,6 +12,7 @@ Panels:
         - /TF1/Tree1
         - /PointCloud22
         - /PoseArray1
+        - /Pose1
       Splitter Ratio: 0.4153846204280853
     Tree Height: 806
   - Class: rviz/Selection
@@ -184,13 +185,28 @@ Visualization Manager:
       Class: rviz/PoseArray
       Color: 255; 25; 0
       Enabled: true
-      Head Length: 0.07000000029802322
-      Head Radius: 0.029999999329447746
+      Head Length: 0.30000001192092896
+      Head Radius: 0.20000000298023224
       Name: PoseArray
       Shaft Length: 0.23000000417232513
       Shaft Radius: 0.009999999776482582
-      Shape: Arrow (Flat)
-      Topic: /red/mood/poses
+      Shape: Arrow (3D)
+      Topic: /red/mood/pose_array
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 115; 210; 22
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.20000000298023224
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic: /red/mood/tracked_pose
       Unreliable: false
       Value: true
   Enabled: true
@@ -221,25 +237,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 18.4143123626709
+      Distance: 16.879507064819336
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 4.8932695388793945
-        Y: 3.8823344707489014
-        Z: 0.7145625352859497
+        X: 5.930821418762207
+        Y: 4.798239231109619
+        Z: 3.695701837539673
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7747966051101685
+      Pitch: 0.8147966265678406
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.676499128341675
+      Yaw: 3.066499948501587
     Saved: ~
 Window Geometry:
   Displays:
