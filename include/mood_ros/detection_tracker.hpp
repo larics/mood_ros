@@ -47,6 +47,7 @@ std::ostream &operator<<(std::ostream &stream, const std::vector<T> &values)
 /**
  * @brief This class is used for assigning ID's to given centroid estimates of detected
  * objects. The ID's are updated with respect to their mutual distance.
+ * NOTE: Make sure that the centroid_t type has an appropriate operator<< overload.
  *
  * @tparam centroid_t Type of object position
  */
@@ -106,9 +107,11 @@ public:
    * ID's to given objects.
    *
    * @param t_inputCentroids A vector of detected object centroids
-   * @return const int
+   * @return std::tuple<bool, centroid_t> Returns the currently tracked centroid with the
+   * success bool
    */
-  const int updateAllCentroids(const std::vector<centroid_t> &t_inputCentroids)
+  std::tuple<bool, centroid_t> updateAllCentroids(
+    const std::vector<centroid_t> &t_inputCentroids)
   {
     ROS_INFO_THROTTLE(THROTTLE_DURATION, "CentroidTracker - update called");
     ROS_DEBUG_STREAM("Input centroids: " << t_inputCentroids);
@@ -120,7 +123,7 @@ public:
       case_handle_empty_centroid_input();
       ROS_WARN_THROTTLE(
         THROTTLE_DURATION, "CentroidTracker - input vector is empty, returning -1");
-      return -1;
+      return { false, centroid_t{} };
     }
 
     if (m_centroidMap.empty()) {
@@ -133,25 +136,8 @@ public:
     }
 
     update_currently_tracked_ID();
-    if (m_currentlyTrackedID == -1) { return -1; }
-
-    auto it = std::find(t_inputCentroids.begin(),
-      t_inputCentroids.end(),
-      m_centroidMap[m_currentlyTrackedID]);
-    if (it != t_inputCentroids.end()) { return int(it - t_inputCentroids.begin()); }
-
-    // If the currently tracked centroid is not in the inputCentroids vector
-    for (const auto &mapItem : m_centroidMap) {
-      auto newIt =
-        std::find(t_inputCentroids.begin(), t_inputCentroids.end(), mapItem.second);
-      if (newIt != t_inputCentroids.end()) {
-        m_currentlyTrackedID = int(newIt - t_inputCentroids.begin());
-        return m_currentlyTrackedID;
-      }
-    }
-
-    ROS_FATAL("CentroidTracker - Something went wrong. WTF?!");
-    return -1;
+    if (m_currentlyTrackedID == -1) { return { false, centroid_t{} }; }
+    return { true, m_centroidMap[m_currentlyTrackedID] };
   }
 
   /**
@@ -280,12 +266,10 @@ private:
     for (const auto &row : unusedRowIDs) {
       std::size_t centroidID = centroidIDs[row];
       m_disappearedCentroidMap[centroidID]++;
-      ROS_WARN_THROTTLE(THROTTLE_DURATION,
-        "Centroid ID: %lu - (%.2f, %.2f) unseen for %d frames",
-        centroidID,
-        m_centroidMap[centroidID].first,
-        m_centroidMap[centroidID].second,
-        m_disappearedCentroidMap[centroidID]);
+      ROS_WARN_STREAM_THROTTLE(THROTTLE_DURATION,
+        "Centroid ID: " << centroidID << " - " << m_centroidMap[centroidID]
+                        << "  unseen for " << m_disappearedCentroidMap[centroidID]
+                        << " frames");
 
       if (m_disappearedCentroidMap[centroidID] > m_maxDisappearedFrames) {
         deregister_centroid_id(centroidID);
@@ -304,15 +288,20 @@ private:
 
     // Make objects disappear
     std::vector<std::size_t> IDsToRemove;
-    for (auto &centroid : m_disappearedCentroidMap) {
-      centroid.second++;
-      ROS_WARN_THROTTLE(THROTTLE_DURATION,
-        "Object: (%.2f, %.2f) missing for %d frames",
-        m_centroidMap[centroid.first].first,
-        m_centroidMap[centroid.first].second,
-        centroid.second);
-      if (centroid.second > m_maxDisappearedFrames) {
-        IDsToRemove.push_back(centroid.first);
+    for (auto &map_entry : m_disappearedCentroidMap) {
+
+      // Increase dissapearance count
+      map_entry.second++;
+      auto &centroid_index = map_entry.first;
+      auto &disappeared_frames = map_entry.second;
+      ROS_WARN_STREAM_THROTTLE(THROTTLE_DURATION, m_centroidMap.size());
+      ROS_WARN_STREAM_THROTTLE(THROTTLE_DURATION,
+        "Object: " << m_centroidMap[centroid_index] << " missing for "
+                   << disappeared_frames << " frames");
+
+      // Check to remove the centroid
+      if (disappeared_frames > m_maxDisappearedFrames) {
+        IDsToRemove.push_back(centroid_index);
       }
     }
 
@@ -338,20 +327,14 @@ private:
   {
     m_centroidMap[m_nextObjectID] = newCentroid;
     m_disappearedCentroidMap[m_nextObjectID] = 0;
-    ROS_INFO_THROTTLE(THROTTLE_DURATION,
-      "New object added! - (%.2f, %.2f)",
-      newCentroid.first,
-      newCentroid.second);
+    ROS_INFO_STREAM_THROTTLE(THROTTLE_DURATION, "New object added! - " << newCentroid);
     m_nextObjectID++;
   }
 
   void deregister_centroid_id(const int objectID)
   {
-    ROS_FATAL_THROTTLE(THROTTLE_DURATION,
-      "Removing object with ID: %d - (%.2f, %.2f)",
-      objectID,
-      m_centroidMap[objectID].first,
-      m_centroidMap[objectID].second);
+    ROS_FATAL_STREAM_THROTTLE(THROTTLE_DURATION,
+      "Removing object with ID: " << objectID << " - " << m_centroidMap[objectID]);
     m_centroidMap.erase(objectID);
     m_disappearedCentroidMap.erase(objectID);
   }
