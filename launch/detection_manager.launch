@@ -2,6 +2,7 @@
   <arg name="namespace" default="$(env UAV_NAMESPACE)"/>
   <arg name="manager_config" default="$(find mood_ros)/config/detection_manager_config.yaml"/>
   <arg name="blob_config" default="$(find mood_ros)/config/blob_detector_config.yaml"/>
+  <arg name="lkf_config" default="$(find mood_ros)/config/lkf_config.yaml"/>
   <arg name="image" default="camera/color/image_raw"/>
   <arg name="pointcloud" default="camera/depth_registered/points"/>
   <arg name="depth" default="camera/color/image_raw/compressedDetph"/>
@@ -11,6 +12,9 @@
     
     <!-- Detection manager -->
     <rosparam command="load" file="$(arg manager_config)"/>
+
+    <!-- Kalman Filter parameters -->
+    <rosparam command="load" file="$(arg lkf_config)"/>
 
     <!-- Blob detector -->
     <rosparam command="load" file="$(arg blob_config)"/>

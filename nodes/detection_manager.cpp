@@ -13,6 +13,8 @@
 #include <mood_ros/msg_sync_interface.hpp>
 #include <mood_ros/detection_tracker.hpp>
 #include <uav_ros_lib/param_util.hpp>
+#include <uav_ros_lib/ros_convert.hpp>
+#include <uav_ros_lib/estimation/constant_velocity_lkf.hpp>
 
 // Distance between poses needed by the DetectionTracker
 double pose_distance(const geometry_msgs::Pose &p1, const geometry_msgs::Pose &p2)
@@ -66,13 +68,19 @@ int main(int argc, char **argv)
   auto detected_poses_pub = nh.advertise<geometry_msgs::PoseArray>("mood/pose_array", 1);
   auto tracked_pose_pub =
     nh.advertise<geometry_msgs::PoseStamped>("mood/tracked_pose", 1);
+  auto filtered_pose_pub =
+    nh.advertise<geometry_msgs::PoseStamped>("mood/filtered_pose", 1);
 
   // Load synchronization plugin
   auto sync_plugin_loader =
     std::make_unique<sync_loader_t>("mood_ros", "mood_base::msg_sync_interface");
   auto synchronizer = sync_plugin_loader->createUniqueInstance(synchronizer_plugin_name);
 
+  // Initialize the pose tracker
   PoseTracker pose_tracker(50, pose_distance);
+  bool new_pose_calculated = false;
+  // Register the synchronizer callback, this is where the magic happens
+  geometry_msgs::PoseStamped tracked_pose_stamped;
   synchronizer->register_callback([&](const sensor_comm::sensor_info &info) {
     // First, update the detector
     auto resp = detector->update(info);
@@ -86,7 +94,7 @@ int main(int argc, char **argv)
     labeled_img_pub.publish(detector->get_labeled_image());
     detected_poses_pub.publish(detected_pose_array);
 
-    // Update tracker & Publish tracked if possible
+    // Update tracker
     auto [tracker_status, tracked_pose] =
       pose_tracker.updateAllCentroids(detected_pose_array.poses);
 
@@ -94,12 +102,45 @@ int main(int argc, char **argv)
       ROS_FATAL_THROTTLE(1.0, "[DetectionManager] Tracking failed");
       // TODO(lmark): Maybe do something if tracking fails :-)
     }
-    
-    geometry_msgs::PoseStamped tracked_pose_stamped;
+
+    // Publish tracked pose
     tracked_pose_stamped.header = detected_pose_array.header;
     tracked_pose_stamped.pose = tracked_pose;
     tracked_pose_pub.publish(tracked_pose_stamped);
+    new_pose_calculated = tracker_status;
   });
+
+  // Initialize kalman filtering
+  ConstantVelocityLKF lkf_x("lkf_x", nh_private);
+  ConstantVelocityLKF lkf_y("lkf_y", nh_private);
+  ConstantVelocityLKF lkf_z("lkf_z", nh_private);
+  ConstantVelocityLKF lkf_heading("lkf_heading", nh_private);
+  const auto kalman_dt = 0.02;
+  auto kalman_timer =
+    nh.createTimer(ros::Duration(kalman_dt), [&](const ros::TimerEvent & /* unused */) {
+      // Do the Kalman filtering
+      lkf_x.estimateState(
+        kalman_dt, { tracked_pose_stamped.pose.position.x }, new_pose_calculated);
+      lkf_y.estimateState(
+        kalman_dt, { tracked_pose_stamped.pose.position.y }, new_pose_calculated);
+      lkf_z.estimateState(
+        kalman_dt, { tracked_pose_stamped.pose.position.z }, new_pose_calculated);
+      lkf_heading.estimateState(kalman_dt,
+        { ros_convert::calculateYaw(tracked_pose_stamped.pose.orientation) },
+        new_pose_calculated);
+
+      // Publish filtered pose&
+      geometry_msgs::PoseStamped filtered_pose_stamped;
+      filtered_pose_stamped.header = tracked_pose_stamped.header;
+      filtered_pose_stamped.pose.position.x = lkf_x.getState()[0];
+      filtered_pose_stamped.pose.position.y = lkf_y.getState()[0];
+      filtered_pose_stamped.pose.position.z = lkf_z.getState()[0];
+      filtered_pose_stamped.pose.orientation =
+        ros_convert::calculate_quaternion(lkf_heading.getState()[0]);
+      filtered_pose_pub.publish(filtered_pose_stamped);
+    });
+
+  // Initialize the synchronizer
   auto sync_init = synchronizer->initialize(nh);
   if (!sync_init) {
     ROS_FATAL("[DetectionManager] Synchronizer initialization unsucessful!");
