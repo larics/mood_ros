@@ -21,9 +21,6 @@ The *MOOD* manager consists of a ROS Message Synchronizer plugin and an Object D
     <img src=".fig/mood_fig.png" width="800" title="Windturbine ICP." />
 </p>
 
-*TODO*: Add CentroidTracker<T> to the image  
-*TODO*: Think about how to pluginize the tracker
-
 ### ROS Message Synchronizer
 In order to synchronize the needed sensor messages please provide a ROS message synchonization
 implementation of the ```mood_base::msg_sync_interface``` in [msg_sync_interface.hpp](include/mood_ros/msg_sync_interface.hpp).  
@@ -31,6 +28,9 @@ implementation of the ```mood_base::msg_sync_interface``` in [msg_sync_interface
 
 ### Object Detector
 In order to add a new object detector plugin please provide a concrete implementation of the ```mood_base::detector_interface``` in  [detector_interface.hpp](include/mood_ros/detector_interface.hpp).
+
+### Pose Tracker and Kalman Filter
+For now remain static elements of the MOOD Manager. Pose Tracker tracks a single detected pose based on distance and Kalman filter performs prediction on the given tracked pose.
 
 ### MOOD Manager
 A node which dynamically loads and connects one ROS Message Synchronizer plugin and one Object Detector plugin defined by the given configuration file (e.g. [detection_manager_config.yaml](config/detection_manager_config.yaml)).  
