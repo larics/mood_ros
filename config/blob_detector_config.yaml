@@ -4,7 +4,7 @@ blob_detector:
 
   filter_by_area: True
   min_area: 100
-  max_area: 10000
+  max_area: 100000
 
   filter_by_color: True
   blob_color: 0
