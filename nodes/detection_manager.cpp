@@ -3,6 +3,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_srvs/Trigger.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
@@ -78,6 +79,24 @@ int main(int argc, char **argv)
 
   // Initialize the pose tracker
   PoseTracker pose_tracker(50, pose_distance);
+
+  // Initialize the switching service
+  auto switching_service =
+    nh.advertiseService<std_srvs::TriggerRequest, std_srvs::TriggerResponse>(
+      "mood/switch_tracking",
+      [&](std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &resp) {
+        if (pose_tracker.getMap().size() < 2) {
+          resp.success = false;
+          resp.message = "Tracking map has less than 2 entries";
+          return true;
+        }
+
+        auto [success, message] = pose_tracker.nextTrackingID();
+        resp.success = success;
+        resp.message = message;
+        return true;
+      });
+
   bool new_pose_calculated = false;
   // Register the synchronizer callback, this is where the magic happens
   geometry_msgs::PoseStamped tracked_pose_stamped;
@@ -138,6 +157,8 @@ int main(int argc, char **argv)
       filtered_pose_stamped.pose.orientation =
         ros_convert::calculate_quaternion(lkf_heading.getState()[0]);
       filtered_pose_pub.publish(filtered_pose_stamped);
+
+      if (new_pose_calculated) { new_pose_calculated = false; }
     });
 
   // Initialize the synchronizer

@@ -101,6 +101,22 @@ public:
     return it->second;
   }
 
+  std::tuple<bool, std::string> nextTrackingID()
+  {
+    if (m_centroidMap.size() < 2) { return { false, "Not enough centroid entries." }; }
+
+    auto current_it = m_centroidMap.find(m_currentlyTrackedID);
+    auto next_it = std::next(current_it);
+
+    if (next_it == m_centroidMap.end()) {
+      m_currentlyTrackedID = m_centroidMap.begin()->first;
+    } else {
+      m_currentlyTrackedID = next_it->first;
+    }
+
+    return { true, "Tracking switched to ID: " + m_currentlyTrackedID };
+  }
+
   /**
    * @brief This method should be called every time a new vector of detected object
    * centroids is obtained. It updates all internal structures and assigns appropriate
@@ -138,26 +154,6 @@ public:
     update_currently_tracked_ID();
     if (m_currentlyTrackedID == -1) { return { false, centroid_t{} }; }
     return { true, m_centroidMap[m_currentlyTrackedID] };
-  }
-
-  /**
-   * @brief Draw all found centroids on an image. Use this method only if given centroid
-   * type corresponds to image pixels.
-   *
-   * @param image
-   */
-  void drawCentroids(cv::Mat &image)
-  {
-    for (const auto &centroid : m_centroidMap) {
-      cv::putText(image,
-        std::to_string(centroid.first),
-        cv::Point(centroid.second.first, centroid.second.second),
-        cv::FONT_HERSHEY_COMPLEX,
-        1,
-        cv::Scalar(0, 120, 215),
-        2,
-        cv::LINE_AA);
-    }
   }
 
 private:
