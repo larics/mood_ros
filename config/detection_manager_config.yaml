@@ -1,3 +1,4 @@
 mood:
+  world_frame: "mavros/world"
   detector: "BlobDetector"
   synchronizer: "PointcloudRGBSync"
