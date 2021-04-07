@@ -121,7 +121,7 @@ public:
   geometry_msgs::PoseArray get_object_poses() override
   {
     m_blob_poses.header.stamp = ros::Time::now();
-    m_blob_poses.header.frame_id = "red/base_link";
+    m_blob_poses.header.frame_id = m_base_link;
     return m_blob_poses;
   }
 
@@ -166,8 +166,8 @@ public:
     }
 
     // Add namespace prefixes
-    m_base_link = nh.getNamespace() + m_base_link;
-    m_camera_link = nh.getNamespace() + m_camera_link;
+    m_base_link = nh.getNamespace() + "/" + m_base_link;
+    m_camera_link = nh.getNamespace() + "/" + m_camera_link;
 
     // Setup reconfigure handler
     m_blob_param_handler_ptr =
@@ -180,7 +180,7 @@ private:
   {
     try {
       auto m_camera_to_base_link =
-        m_tf_buffer.lookupTransform("red/base_link", "red/camera", ros::Time(0));
+        m_tf_buffer.lookupTransform(m_base_link, m_camera_link, ros::Time(0));
 
       // Save the obtained transform
       m_camera_to_base_link_trans =
