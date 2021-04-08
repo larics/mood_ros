@@ -7,6 +7,7 @@
   <arg name="pointcloud"      default="camera/depth_registered/points"/>
   <arg name="depth"           default="camera/color/image_raw/compressedDetph"/>
   <arg name="odometry"        default="mavros/global_position/local"/>
+  <arg name="tf_prefix"       default="$(env UAV_NAMESPACE)"/>
 
   <node pkg="mood_ros" name="detection_manager_node" 
     type="detection_manager_node" output="screen" ns="$(arg namespace)">
@@ -20,6 +21,7 @@
 
     <!-- Blob detector -->
     <rosparam command="load" file="$(arg blob_config)"/>
+    <param name="blob_detector/tf_prefix" value="$(arg tf_prefix)"/>
 
     <!-- syncronizer remaps -->
     <remap from="image"       to="$(arg image)"/>

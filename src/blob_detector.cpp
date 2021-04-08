@@ -142,8 +142,11 @@ public:
     m_it_ptr = std::make_unique<image_transport::ImageTransport>(nh);
     m_mask_debug_pub = m_it_ptr->advertise("mood/blob_detector/debug/mask", 1);
 
+    std::string tf_prefix;
+
     BlobDetectorParams_t params;
     try {
+      // Params loaded through yaml file
       param_util::getParamOrThrow(nh_private, "blob_detector/base_link", m_base_link);
       param_util::getParamOrThrow(nh_private, "blob_detector/camera_link", m_camera_link);
       param_util::getParamOrThrow(
@@ -160,14 +163,19 @@ public:
         nh_private, "blob_detector/min_circularity", params.min_circularity);
       param_util::getParamOrThrow(
         nh_private, "blob_detector/max_circularity", params.max_circularity);
+
+      // Params loaded directly through launch file
+      param_util::getParamOrThrow(nh_private, "blob_detector/tf_prefix", tf_prefix);
     } catch (std::runtime_error &e) {
       ROS_ERROR_STREAM("[BlobDetector] Parameter initialization failed " << e.what());
       return false;
     }
 
     // Add namespace prefixes
-    m_base_link = nh.getNamespace() + "/" + m_base_link;
-    m_camera_link = nh.getNamespace() + "/" + m_camera_link;
+    if (!tf_prefix.empty()) {
+      m_base_link = tf_prefix + "/" + m_base_link;
+      m_camera_link = tf_prefix + "/" + m_camera_link;
+    }
 
     // Setup reconfigure handler
     m_blob_param_handler_ptr =
