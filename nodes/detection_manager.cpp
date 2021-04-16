@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     // First, update the detector
     auto resp = detector->update(info);
     if (!resp.status) {
-      ROS_ERROR_STREAM(
+      ROS_ERROR_STREAM_THROTTLE(2.0,
         "[DetectionManager] Detector failed with message: " << resp.response);
     };
 
@@ -235,7 +235,8 @@ int main(int argc, char **argv)
     ROS_FATAL("[DetectionManager] Synchronizer initialization unsucessful!");
     return 1;
   }
-
+  
+  ROS_INFO("[DetectionManager] Started Successfully");
   ros::spin();
   return 0;
 }

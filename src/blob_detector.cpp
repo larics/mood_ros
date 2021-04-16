@@ -180,6 +180,8 @@ public:
     // Setup reconfigure handler
     m_blob_param_handler_ptr =
       std::make_unique<BlobDetectorReCfg_t>(params, "mood/blob_detector");
+
+    ROS_INFO("[BlobDetector] Initialized Successfully");
     return true;
   }
 
