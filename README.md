@@ -9,7 +9,6 @@ using the [ROS plugin](http://wiki.ros.org/pluginlib/Tutorials/Writing%20and%20U
 
 ### ROS Packages
 * [uav_ros_lib](https://github.com/lmark1/uav_ros_lib)
-* [larics_gazebo_worlds](https://github.com/larics/larics_gazebo_worlds/)
  
 ### External packages
 * OpenCV
