@@ -1,0 +1,14 @@
+blob_detector:
+  base_link: "camera_link"
+  camera_link: "camera_color_optical_frame"
+
+  filter_by_area: True
+  min_area: 100
+  max_area: 100000
+
+  filter_by_color: True
+  blob_color: 0
+
+  filter_by_circularity: True
+  min_circularity: 0.5
+  max_circularity: 1.5

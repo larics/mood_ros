@@ -1,9 +1,9 @@
-name: inspection
+name: blob_detect
 root: ./
-startup_window: roscore
+startup_window: detection
 pre_window: export UAV_NAMESPACE=red; source ~/detection_ws/devel/setup.zsh
 windows:
-  - realsense:
+  - roscore:
       layout: tiled
       panes:
         - roscore
@@ -15,10 +15,12 @@ windows:
   - detection:
       layout: tiled
       panes:
-        - waitForRos; roslaunch mood_ros detection_manager.launch
-        - waitForRos; sleep 2; rosrun rqt_gui rqt_gui --perspective-file $(rospack find mood_ros)/config/blob_detector_rqt_sim.perspective
-        - waitForRos; sleep 2; rosrun rviz rviz -d $(rospack find mood_ros)/config/blob_detector_sim.rviz
+        - waitForRos; roslaunch mood_ros detection_manager.launch 
+          image:=camera/color/image_rect_color pointcloud:=camera/depth_registered/points
+          blob_config:=custom_config/blob_detector_config.yaml
   - i3-layout:
       layout: tiled
       panes:
-        - waitForRos; sleep 5; ~/i3-layout-manager/layout_manager.sh layout.json
+        - waitForRos; sleep 2; rosrun rqt_gui rqt_gui --perspective-file custom_config/realsense_optitrack_blob.perspective
+        - waitForRos; sleep 2; rosrun rviz rviz -d custom_config/rviz_realsense_optitrack.rviz
+        - waitForRos; sleep 6; ~/i3-layout-manager/layout_manager.sh layout.json
