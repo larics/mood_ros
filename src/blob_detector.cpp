@@ -163,6 +163,20 @@ public:
         nh_private, "blob_detector/min_circularity", params.min_circularity);
       param_util::getParamOrThrow(
         nh_private, "blob_detector/max_circularity", params.max_circularity);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/filter_by_inertia", params.filter_by_inertia);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/min_inertia", params.min_inertia);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/max_inertia", params.max_inertia);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/filter_by_convexity", params.filter_by_convexity);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/min_convexity", params.min_convexity);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/max_convexity", params.max_convexity);
+      
+      
 
       // Params loaded directly through launch file
       param_util::getParamOrThrow(nh_private, "blob_detector/tf_prefix", tf_prefix);
@@ -230,6 +244,12 @@ private:
     blob_params.maxCircularity = reconf_params.max_circularity;
     blob_params.filterByColor = reconf_params.filter_by_color;
     blob_params.blobColor = reconf_params.blob_color;
+    blob_params.filterByConvexity = reconf_params.filter_by_convexity;
+    blob_params.minConvexity = reconf_params.min_convexity;
+    blob_params.maxConvexity = reconf_params.max_convexity;
+    blob_params.filterByInertia = reconf_params.filter_by_inertia;
+    blob_params.minInertiaRatio = reconf_params.min_inertia;
+    blob_params.maxInertiaRatio = reconf_params.max_inertia;
     m_blob_detector_ptr = cv::SimpleBlobDetector::create(blob_params);
 
     m_blob_detector_ptr->detect(cv_image_ptr->image, m_blob_keypoints);

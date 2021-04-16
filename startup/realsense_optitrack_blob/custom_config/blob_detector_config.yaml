@@ -12,3 +12,11 @@ blob_detector:
   filter_by_circularity: True
   min_circularity: 0.5
   max_circularity: 1.5
+
+  filter_by_inertia: True
+  min_inertia: 0.5
+  max_inertia: 1
+
+  filter_by_convexity: True
+  min_convexity: 0.9
+  max_convexity: 1
