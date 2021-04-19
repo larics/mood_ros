@@ -186,7 +186,7 @@ public:
     }
 
     // Add namespace prefixes
-    if (!tf_prefix.empty()) {
+    if (tf_prefix != "none") {
       m_base_link = tf_prefix + "/" + m_base_link;
       m_camera_link = tf_prefix + "/" + m_camera_link;
     }
