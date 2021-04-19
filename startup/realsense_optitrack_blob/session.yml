@@ -1,23 +1,28 @@
 name: blob_detect
 root: ./
 startup_window: detection
-pre_window: export UAV_NAMESPACE=red; source ~/detection_ws/devel/setup.zsh
+pre_window: export UAV_NAMESPACE=red; source ~/detection_ws/devel/setup.zsh; 
+  export BASE_LINK=base_link; export CAMERA_LINK=$UAV_NAMESPACE/camera
 windows:
   - roscore:
       layout: tiled
       panes:
         - roscore
-        - waitForRos; roslaunch realsense2_camera rs_rgbd.launch camera:=$UAV_NAMESPACE/camera
+        - waitForRos; roslaunch realsense2_camera rs_rgbd.launch camera:=$CAMERA_LINK
   - optitrack:
       layout: tiled
       panes:
-        - waitForRos; roslaunch custom_config/optitrack.launch object_name:=camera
-        - waitForRos; roslaunch custom_config/optitrack.launch object_name:=blober
+        - waitForRos; rosrun tf static_transform_publisher 
+          0.0213719   0.0051683  -0.01057254  0.04285818 -0.09265753 -0.02127363 0.99454773 
+          $BASE_LINK $CAMERA_LINK"_link" 100
+        - waitForRos; roslaunch custom_config/optitrack.launch object_name:=$BASE_LINK
   - detection:
       layout: tiled
       panes:
         - waitForRos; roslaunch mood_ros detection_manager.launch 
           image:=camera/color/image_rect_color pointcloud:=camera/depth_registered/points
+          odometry:=/base_link/vrpn_client/estimated_odometry tf_prefix:="none"
+          manager_config:=custom_config/detection_manager_config.yaml
           blob_config:=custom_config/blob_detector_config.yaml
   - i3-layout:
       layout: tiled

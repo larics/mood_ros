@@ -65,6 +65,10 @@ Visualization Manager:
       Frame Timeout: 10
       Frames:
         All Enabled: false
+        base_link:
+          Value: true
+        optitrack:
+          Value: true
         red/camera_aligned_depth_to_color_frame:
           Value: false
         red/camera_color_frame:
@@ -83,6 +87,9 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
+        optitrack:
+          base_link:
+            {}
         red/camera_link:
           red/camera_aligned_depth_to_color_frame:
             red/camera_color_optical_frame:
@@ -174,7 +181,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: red/camera_link
+    Fixed Frame: optitrack
     Frame Rate: 30
   Name: root
   Tools:
@@ -198,25 +205,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 8.026041030883789
+      Distance: 3.981001377105713
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 4.239200592041016
-        Y: 0.2549947500228882
-        Z: -0.7378023862838745
+        X: 0.1747625172138214
+        Y: -1.9750823974609375
+        Z: -0.3320564329624176
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.549795925617218
+      Pitch: 0.4397948682308197
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.3615031242370605
+      Yaw: 1.8314632177352905
     Saved: ~
 Window Geometry:
   Displays:

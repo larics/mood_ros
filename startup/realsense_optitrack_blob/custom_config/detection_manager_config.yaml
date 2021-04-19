@@ -1,0 +1,4 @@
+mood:
+  world_frame: "optitrack"
+  detector: "BlobDetector"
+  synchronizer: "PointcloudRGBSync"

@@ -1,6 +1,6 @@
 blob_detector:
-  base_link: "camera_link"
-  camera_link: "camera_color_optical_frame"
+  base_link: "base_link"
+  camera_link: "red/camera_color_optical_frame"
 
   filter_by_area: True
   min_area: 100
