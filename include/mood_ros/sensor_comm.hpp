@@ -12,15 +12,14 @@ namespace sensor_comm {
  */
 struct sensor_info
 {
-  bool has_pointcloud;
+  bool                     has_pointcloud;
   sensor_msgs::PointCloud2 pointcloud;
 
-  bool has_rgb;
+  bool               has_rgb;
   sensor_msgs::Image rgb_image;
 
-  bool has_depth;
+  bool               has_depth;
   sensor_msgs::Image depth_image;
-  
 };
 
 /**
@@ -29,7 +28,7 @@ struct sensor_info
  */
 struct detection_response
 {
-  bool status;
+  bool        status;
   std::string response;
 };
 

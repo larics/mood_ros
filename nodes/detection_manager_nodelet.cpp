@@ -21,7 +21,7 @@
 #include <uav_ros_lib/estimation/constant_velocity_lkf.hpp>
 
 // Distance between poses needed by the DetectionTracker
-double pose_distance(const geometry_msgs::Pose &p1, const geometry_msgs::Pose &p2)
+double pose_distance(const geometry_msgs::Pose& p1, const geometry_msgs::Pose& p2)
 {
   return sqrt((p1.position.x - p2.position.x) * (p1.position.x - p2.position.x)
               + (p1.position.y - p2.position.y) * (p1.position.y - p2.position.y)
@@ -31,7 +31,7 @@ double pose_distance(const geometry_msgs::Pose &p1, const geometry_msgs::Pose &p
 // DetectionTracker<T> requires a T operator<< overload, in this case geometry_msgs::Pose
 // NOTE: put this function in the same namesapce as the DetectionTracker i.e. mood_tracker
 namespace mood_tracker {
-std::ostream &operator<<(std::ostream &stream, const geometry_msgs::Pose &pose)
+std::ostream& operator<<(std::ostream& stream, const geometry_msgs::Pose& pose)
 {
   stream << " [" << pose.position.x << ", " << pose.position.y << ", " << pose.position.z
          << "] ";
@@ -40,8 +40,8 @@ std::ostream &operator<<(std::ostream &stream, const geometry_msgs::Pose &pose)
 }// namespace mood_tracker
 
 using detector_loader_t = pluginlib::ClassLoader<mood_base::detector_interface>;
-using sync_loader_t = pluginlib::ClassLoader<mood_base::msg_sync_interface>;
-using PoseTracker = mood_tracker::DetectionTracker<geometry_msgs::Pose>;
+using sync_loader_t     = pluginlib::ClassLoader<mood_base::msg_sync_interface>;
+using PoseTracker       = mood_tracker::DetectionTracker<geometry_msgs::Pose>;
 
 namespace mood_ros {
 

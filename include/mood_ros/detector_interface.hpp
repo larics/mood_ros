@@ -21,7 +21,7 @@ public:
    * @return sensor_comm::detection_response  Response from the updated detection process.
    */
   virtual sensor_comm::detection_response update(
-    const sensor_comm::sensor_info &sensor_info) = 0;
+    const sensor_comm::sensor_info& sensor_info) = 0;
 
   /**
    * @brief Get the object poses found by the detector.
@@ -45,7 +45,7 @@ public:
    * @return true Detector initialization successful.
    * @return false Detector initialization successful.
    */
-  virtual bool initialize(ros::NodeHandle &nh, ros::NodeHandle &nh_private) = 0;
+  virtual bool initialize(ros::NodeHandle& nh, ros::NodeHandle& nh_private) = 0;
 
 protected:
   detector_interface() { ROS_INFO("[detector_interface] Constructor"); }

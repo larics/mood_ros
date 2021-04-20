@@ -20,7 +20,7 @@
 #include <uav_ros_lib/estimation/constant_velocity_lkf.hpp>
 
 // Distance between poses needed by the DetectionTracker
-double pose_distance(const geometry_msgs::Pose &p1, const geometry_msgs::Pose &p2)
+double pose_distance(const geometry_msgs::Pose& p1, const geometry_msgs::Pose& p2)
 {
   return sqrt((p1.position.x - p2.position.x) * (p1.position.x - p2.position.x)
               + (p1.position.y - p2.position.y) * (p1.position.y - p2.position.y)
@@ -30,7 +30,7 @@ double pose_distance(const geometry_msgs::Pose &p1, const geometry_msgs::Pose &p
 // DetectionTracker<T> requires a T operator<< overload, in this case geometry_msgs::Pose
 // NOTE: put this function in the same namesapce as the DetectionTracker i.e. mood_tracker
 namespace mood_tracker {
-std::ostream &operator<<(std::ostream &stream, const geometry_msgs::Pose &pose)
+std::ostream& operator<<(std::ostream& stream, const geometry_msgs::Pose& pose)
 {
   stream << " [" << pose.position.x << ", " << pose.position.y << ", " << pose.position.z
          << "] ";
@@ -39,10 +39,10 @@ std::ostream &operator<<(std::ostream &stream, const geometry_msgs::Pose &pose)
 }// namespace mood_tracker
 
 using detector_loader_t = pluginlib::ClassLoader<mood_base::detector_interface>;
-using sync_loader_t = pluginlib::ClassLoader<mood_base::msg_sync_interface>;
-using PoseTracker = mood_tracker::DetectionTracker<geometry_msgs::Pose>;
+using sync_loader_t     = pluginlib::ClassLoader<mood_base::msg_sync_interface>;
+using PoseTracker       = mood_tracker::DetectionTracker<geometry_msgs::Pose>;
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "detection_manager");
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   }
 
   image_transport::ImageTransport it(nh);
-  auto labeled_img_pub = it.advertise("mood/labeled_image", 1);
+  auto                            labeled_img_pub = it.advertise("mood/labeled_image", 1);
   auto detected_poses_pub = nh.advertise<geometry_msgs::PoseArray>("mood/pose_array", 1);
 
   // Load synchronization plugin
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
   auto switching_service =
     nh.advertiseService<std_srvs::TriggerRequest, std_srvs::TriggerResponse>(
       "mood/switch_tracking",
-      [&](std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &resp) {
+      [&](std_srvs::TriggerRequest& req, std_srvs::TriggerResponse& resp) {
         if (pose_tracker.getMap().size() < 2) {
           resp.success = false;
           resp.message = "Tracking map has less than 2 entries";
@@ -91,8 +91,8 @@ int main(int argc, char **argv)
         }
 
         auto [success, message] = pose_tracker.nextTrackingID();
-        resp.success = success;
-        resp.message = message;
+        resp.success            = success;
+        resp.message            = message;
         return true;
       });
 
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   bool new_pose_calculated = false;
   // Register the synchronizer callback, this is where the magic happens
   geometry_msgs::PoseStamped tracked_pose_stamped;
-  synchronizer->register_callback([&](const sensor_comm::sensor_info &info) {
+  synchronizer->register_callback([&](const sensor_comm::sensor_info& info) {
     // First, update the detector
     auto resp = detector->update(info);
     if (!resp.status) {
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
 
     // Publish tracked pose
     tracked_pose_stamped.header = detected_pose_array.header;
-    tracked_pose_stamped.pose = tracked_pose;
+    tracked_pose_stamped.pose   = tracked_pose;
     tracked_pose_pub.publish(tracked_pose_stamped);
     new_pose_calculated = tracker_status;
   });
@@ -133,32 +133,33 @@ int main(int argc, char **argv)
   auto world_tracked_pub =
     nh.advertise<geometry_msgs::PoseStamped>("mood/world_tracked_pose", 1);
   geometry_msgs::PoseStamped world_tracked_pose;
-  auto odom_sub = nh.subscribe<nav_msgs::Odometry>(
-    "odometry", 1, [&](const nav_msgs::OdometryConstPtr &msg) {
+  auto                       odom_sub = nh.subscribe<nav_msgs::Odometry>(
+    "odometry", 1, [&](const nav_msgs::OdometryConstPtr& msg) {
       if (!new_pose_calculated) {
         world_tracked_pub.publish(world_tracked_pose);
         return;
       }
 
       tf2::Matrix3x3 vehicle_transformation;
-      auto vehicle_q = tf2::Quaternion{ msg->pose.pose.orientation.x,
-        msg->pose.pose.orientation.y,
-        msg->pose.pose.orientation.z,
-        msg->pose.pose.orientation.w };
+      auto           vehicle_q = tf2::Quaternion{ msg->pose.pose.orientation.x,
+                                        msg->pose.pose.orientation.y,
+                                        msg->pose.pose.orientation.z,
+                                        msg->pose.pose.orientation.w };
       vehicle_transformation.setRotation(vehicle_q);
 
       // Get tracked world position
-      auto world_tracked_position = vehicle_transformation
-                                    * tf2::Vector3{ tracked_pose_stamped.pose.position.x,
-                                        tracked_pose_stamped.pose.position.y,
-                                        tracked_pose_stamped.pose.position.z };
+      auto world_tracked_position =
+        vehicle_transformation
+        * tf2::Vector3{ tracked_pose_stamped.pose.position.x,
+                        tracked_pose_stamped.pose.position.y,
+                        tracked_pose_stamped.pose.position.z };
 
       tf2::Matrix3x3 tracked_transformation;
       tracked_transformation.setRotation(
         tf2::Quaternion{ tracked_pose_stamped.pose.orientation.x,
-          tracked_pose_stamped.pose.orientation.y,
-          tracked_pose_stamped.pose.orientation.z,
-          tracked_pose_stamped.pose.orientation.w });
+                         tracked_pose_stamped.pose.orientation.y,
+                         tracked_pose_stamped.pose.orientation.z,
+                         tracked_pose_stamped.pose.orientation.w });
       auto world_tracked_orientation = vehicle_transformation * tracked_transformation;
 
       // Get tracked world orientation
@@ -183,7 +184,7 @@ int main(int argc, char **argv)
       }
 
       // Publish !
-      world_tracked_pose.header.stamp = ros::Time::now();
+      world_tracked_pose.header.stamp    = ros::Time::now();
       world_tracked_pose.header.frame_id = world_frame;
       world_tracked_pose.pose.position.x =
         world_tracked_position.x() + msg->pose.pose.position.x;
@@ -202,13 +203,13 @@ int main(int argc, char **argv)
   ConstantVelocityLKF lkf_x("lkf_x", nh_private);
   ConstantVelocityLKF lkf_y("lkf_y", nh_private);
   ConstantVelocityLKF lkf_z("lkf_z", nh_private);
-  //ConstantVelocityLKF lkf_heading("lkf_heading", nh_private);
+  // ConstantVelocityLKF lkf_heading("lkf_heading", nh_private);
   const auto kalman_dt = 0.02;
-  auto filtered_pose_pub =
+  auto       filtered_pose_pub =
     nh.advertise<geometry_msgs::PoseStamped>("mood/world_filtered_pose", 1);
   geometry_msgs::PoseStamped filtered_pose_stamped;
-  auto kalman_timer =
-    nh.createTimer(ros::Duration(kalman_dt), [&](const ros::TimerEvent & /* unused */) {
+  auto                       kalman_timer =
+    nh.createTimer(ros::Duration(kalman_dt), [&](const ros::TimerEvent& /* unused */) {
       // Do the Kalman filtering
       lkf_x.estimateState(
         kalman_dt, { world_tracked_pose.pose.position.x }, new_pose_calculated);
@@ -216,18 +217,18 @@ int main(int argc, char **argv)
         kalman_dt, { world_tracked_pose.pose.position.y }, new_pose_calculated);
       lkf_z.estimateState(
         kalman_dt, { world_tracked_pose.pose.position.z }, new_pose_calculated);
-      //lkf_heading.estimateState(kalman_dt,
+      // lkf_heading.estimateState(kalman_dt,
       //  { ros_convert::calculateYaw(world_tracked_pose.pose.orientation) },
       //  new_pose_calculated);
 
       // Publish filtered pose&
-      filtered_pose_stamped.header.frame_id = world_tracked_pose.header.frame_id;
-      filtered_pose_stamped.header.stamp = ros::Time::now();
-      filtered_pose_stamped.pose.position.x = lkf_x.getState()[0];
-      filtered_pose_stamped.pose.position.y = lkf_y.getState()[0];
-      filtered_pose_stamped.pose.position.z = lkf_z.getState()[0];
+      filtered_pose_stamped.header.frame_id  = world_tracked_pose.header.frame_id;
+      filtered_pose_stamped.header.stamp     = ros::Time::now();
+      filtered_pose_stamped.pose.position.x  = lkf_x.getState()[0];
+      filtered_pose_stamped.pose.position.y  = lkf_y.getState()[0];
+      filtered_pose_stamped.pose.position.z  = lkf_z.getState()[0];
       filtered_pose_stamped.pose.orientation = world_tracked_pose.pose.orientation;
-        //ros_convert::calculate_quaternion(lkf_heading.getState()[0]);
+      // ros_convert::calculate_quaternion(lkf_heading.getState()[0]);
       filtered_pose_pub.publish(filtered_pose_stamped);
 
       if (new_pose_calculated) { new_pose_calculated = false; }
