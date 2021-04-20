@@ -1,0 +1,5 @@
+<library path="lib/libdetection_manager_nodelet">
+  <class name="mood_ros/DetectionManager" type="mood_ros::DetectionManager" base_class_type="nodelet::Nodelet">
+    <description>LocalTrajectoryManager nodelet</description>
+  </class>
+</library>

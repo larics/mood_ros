@@ -1,0 +1,56 @@
+<launch>
+
+  <arg name="namespace"       default="$(env UAV_NAMESPACE)"/>
+  <arg name="manager_config"  default="$(find mood_ros)/config/detection_manager_config.yaml"/>
+  <arg name="blob_config"     default="$(find mood_ros)/config/blob_detector_config.yaml"/>
+  <arg name="lkf_config"      default="$(find mood_ros)/config/lkf_config.yaml"/>
+  <arg name="image"           default="camera/color/image_raw"/>
+  <arg name="pointcloud"      default="camera/depth_registered/points"/>
+  <arg name="depth"           default="camera/color/image_raw/compressedDetph"/>
+  <arg name="odometry"        default="mavros/global_position/local"/>
+  <arg name="tf_prefix"       default="$(env UAV_NAMESPACE)"/>
+
+  <!-- Debug arguments -->
+  <arg name="debug" default="false" />
+  <arg     if="$(arg debug)" name="launch_prefix" value="debug_roslaunch" />
+  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+
+  <!-- Determine if launching in stanadalone or manager mode-->
+  <arg name="standalone" default="false" />
+  <arg     if="$(arg standalone)" name="nodelet"          value="standalone" />
+  <arg unless="$(arg standalone)" name="nodelet"          value="load" />
+  <arg     if="$(arg standalone)" name="nodelet_manager"  value="" />
+  <arg unless="$(arg standalone)" name="nodelet_manager"  value="detection_nodelet_manager" />
+
+  <!-- Start the nodelet manager-->
+  <include file="$(find mood_ros)/launch/nodelet_manager.launch">
+    <arg name="standalone"    value="$(arg standalone)"/>
+    <arg name="namespace"     value="$(arg namespace)"/>
+    <arg name="debug"         value="$(arg debug)"/>
+    <arg name="manager_name"  value="$(arg nodelet_manager)"/>
+  </include>
+
+  <!-- Load LocalTrajectoryManager nodelet -->
+  <node 
+    pkg="nodelet" type="nodelet" name="detection_manager" 
+    args="$(arg nodelet) mood_ros/DetectionManager $(arg nodelet_manager)" 
+    output="screen" launch-prefix="$(arg launch_prefix)" ns="$(arg namespace)">
+
+    <!-- Detection manager -->
+    <rosparam command="load"  file="$(arg manager_config)"/>
+    <remap from="odometry"    to="$(arg odometry)"/>
+
+    <!-- Kalman Filter parameters -->
+    <rosparam command="load" file="$(arg lkf_config)"/>
+
+    <!-- Blob detector -->
+    <rosparam command="load" file="$(arg blob_config)"/>
+    <param name="blob_detector/tf_prefix" value="$(arg tf_prefix)"/>
+
+    <!-- syncronizer remaps -->
+    <remap from="image"       to="$(arg image)"/>
+    <remap from="depth"       to="$(arg depth)"/>
+    <remap from="pointcloud"  to="$(arg pointcloud)"/>
+  </node>
+
+</launch>

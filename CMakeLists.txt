@@ -72,6 +72,11 @@ add_dependencies(detection_manager_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
                  ${catkin_EXPORTED_TARGETS})
 target_link_libraries(detection_manager_node ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_library(detection_manager_nodelet nodes/detection_manager_nodelet.cpp)
+add_dependencies(detection_manager_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                 ${catkin_EXPORTED_TARGETS})
+target_link_libraries(detection_manager_nodelet ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 # Rename C++ executable without prefix The above recommended prefix causes long target
 # names, the following renames the target back to the shorter version for ease of user use
 # e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
