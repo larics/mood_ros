@@ -150,6 +150,10 @@ public:
       param_util::getParamOrThrow(nh_private, "blob_detector/base_link", m_base_link);
       param_util::getParamOrThrow(nh_private, "blob_detector/camera_link", m_camera_link);
       param_util::getParamOrThrow(
+        nh_private, "blob_detector/min_threshold", params.min_threshold);
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/max_threshold", params.max_threshold);
+      param_util::getParamOrThrow(
         nh_private, "blob_detector/filter_by_area", params.filter_by_area);
       param_util::getParamOrThrow(nh_private, "blob_detector/min_area", params.min_area);
       param_util::getParamOrThrow(nh_private, "blob_detector/max_area", params.max_area);
@@ -175,8 +179,7 @@ public:
         nh_private, "blob_detector/min_convexity", params.min_convexity);
       param_util::getParamOrThrow(
         nh_private, "blob_detector/max_convexity", params.max_convexity);
-      
-      
+
 
       // Params loaded directly through launch file
       param_util::getParamOrThrow(nh_private, "blob_detector/tf_prefix", tf_prefix);
@@ -236,6 +239,8 @@ private:
     auto blob_params = cv::SimpleBlobDetector::Params();
 
     // Set corresponding parameters
+    blob_params.minThreshold = reconf_params.min_threshold;
+    blob_params.maxThreshold = reconf_params.max_threshold;
     blob_params.filterByArea = reconf_params.filter_by_area;
     blob_params.minArea = reconf_params.min_area;
     blob_params.maxArea = reconf_params.max_area;

@@ -2,6 +2,9 @@ blob_detector:
   base_link: "red/camera_link"
   camera_link: "red/camera_color_optical_frame"
 
+  min_threshold: 10
+  max_threshold: 200
+  
   filter_by_area: True
   min_area: 100
   max_area: 100000
