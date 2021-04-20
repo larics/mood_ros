@@ -2,9 +2,10 @@ blob_detector:
   base_link: "base_link"
   camera_link: "camera"
 
+  radius_multiplier: 1
   min_threshold: 10
   max_threshold: 200
-  
+
   filter_by_area: True
   min_area: 100
   max_area: 100000

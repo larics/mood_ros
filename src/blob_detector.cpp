@@ -179,7 +179,8 @@ public:
         nh_private, "blob_detector/min_convexity", params.min_convexity);
       param_util::getParamOrThrow(
         nh_private, "blob_detector/max_convexity", params.max_convexity);
-
+      param_util::getParamOrThrow(
+        nh_private, "blob_detector/radius_multiplier", m_radius_multiplier);
 
       // Params loaded directly through launch file
       param_util::getParamOrThrow(nh_private, "blob_detector/tf_prefix", tf_prefix);
@@ -339,14 +340,14 @@ private:
       // Draw a circle for the debug mask
       cv::circle(debug_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 2.0,// keypoint.size is a diameter, not a radius. Duh...
+        keypoint.size / 2.0 * m_radius_multiplier,// keypoint.size is a diameter, not a radius. Duh...
         Color::WHITE,
         -1);
 
       // Draw a circle for the one blob mask
       cv::circle(one_blob_mask,
         cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 2.0,
+        keypoint.size / 2.0 * m_radius_multiplier,
         Color::WHITE,
         -1);
 
@@ -374,6 +375,7 @@ private:
   std::vector<cv::KeyPoint> m_blob_keypoints;
   cv::Mat m_labeled_image;
   geometry_msgs::PoseArray m_blob_poses;
+  double m_radius_multiplier;
 
   /* Image transport for debugging */
   std::unique_ptr<image_transport::ImageTransport> m_it_ptr;
