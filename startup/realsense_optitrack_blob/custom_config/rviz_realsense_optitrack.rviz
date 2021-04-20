@@ -89,16 +89,15 @@ Visualization Manager:
       Tree:
         optitrack:
           base_link:
-            {}
-        red/camera_link:
-          red/camera_aligned_depth_to_color_frame:
-            red/camera_color_optical_frame:
-              {}
-          red/camera_color_frame:
-            {}
-          red/camera_depth_frame:
-            red/camera_depth_optical_frame:
-              {}
+            red/camera_link:
+              red/camera_aligned_depth_to_color_frame:
+                red/camera_color_optical_frame:
+                  {}
+              red/camera_color_frame:
+                {}
+              red/camera_depth_frame:
+                red/camera_depth_optical_frame:
+                  {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -174,7 +173,7 @@ Visualization Manager:
       Shaft Length: 1
       Shaft Radius: 0.10000000149011612
       Shape: Arrow
-      Topic: /red/mood/filtered_pose
+      Topic: /red/mood/world_filtered_pose
       Unreliable: false
       Value: true
   Enabled: true
@@ -220,10 +219,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.4397948682308197
+      Pitch: 0.42479488253593445
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.8314632177352905
+      Yaw: 2.3114631175994873
     Saved: ~
 Window Geometry:
   Displays:
