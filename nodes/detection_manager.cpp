@@ -70,10 +70,6 @@ int main(int argc, char **argv)
   image_transport::ImageTransport it(nh);
   auto labeled_img_pub = it.advertise("mood/labeled_image", 1);
   auto detected_poses_pub = nh.advertise<geometry_msgs::PoseArray>("mood/pose_array", 1);
-  auto tracked_pose_pub =
-    nh.advertise<geometry_msgs::PoseStamped>("mood/tracked_pose", 1);
-  auto filtered_pose_pub =
-    nh.advertise<geometry_msgs::PoseStamped>("mood/filtered_pose", 1);
 
   // Load synchronization plugin
   auto sync_plugin_loader =
@@ -100,6 +96,8 @@ int main(int argc, char **argv)
         return true;
       });
 
+  auto tracked_pose_pub =
+    nh.advertise<geometry_msgs::PoseStamped>("mood/tracked_pose", 1);
   bool new_pose_calculated = false;
   // Register the synchronizer callback, this is where the magic happens
   geometry_msgs::PoseStamped tracked_pose_stamped;
@@ -107,8 +105,8 @@ int main(int argc, char **argv)
     // First, update the detector
     auto resp = detector->update(info);
     if (!resp.status) {
-      ROS_ERROR_STREAM_THROTTLE(2.0,
-        "[DetectionManager] Detector failed with message: " << resp.response);
+      ROS_ERROR_STREAM_THROTTLE(
+        2.0, "[DetectionManager] Detector failed with message: " << resp.response);
     };
 
     // Detection is successful, publish topics
@@ -132,44 +130,15 @@ int main(int argc, char **argv)
     new_pose_calculated = tracker_status;
   });
 
-  // Initialize kalman filtering
-  ConstantVelocityLKF lkf_x("lkf_x", nh_private);
-  ConstantVelocityLKF lkf_y("lkf_y", nh_private);
-  ConstantVelocityLKF lkf_z("lkf_z", nh_private);
-  ConstantVelocityLKF lkf_heading("lkf_heading", nh_private);
-  const auto kalman_dt = 0.02;
-  geometry_msgs::PoseStamped filtered_pose_stamped;
-  auto kalman_timer =
-    nh.createTimer(ros::Duration(kalman_dt), [&](const ros::TimerEvent & /* unused */) {
-      // Do the Kalman filtering
-      lkf_x.estimateState(
-        kalman_dt, { tracked_pose_stamped.pose.position.x }, new_pose_calculated);
-      lkf_y.estimateState(
-        kalman_dt, { tracked_pose_stamped.pose.position.y }, new_pose_calculated);
-      lkf_z.estimateState(
-        kalman_dt, { tracked_pose_stamped.pose.position.z }, new_pose_calculated);
-      lkf_heading.estimateState(kalman_dt,
-        { ros_convert::calculateYaw(tracked_pose_stamped.pose.orientation) },
-        new_pose_calculated);
-
-      // Publish filtered pose&
-      filtered_pose_stamped.header = tracked_pose_stamped.header;
-      filtered_pose_stamped.pose.position.x = lkf_x.getState()[0];
-      filtered_pose_stamped.pose.position.y = lkf_y.getState()[0];
-      filtered_pose_stamped.pose.position.z = lkf_z.getState()[0];
-      filtered_pose_stamped.pose.orientation =
-        ros_convert::calculate_quaternion(lkf_heading.getState()[0]);
-      filtered_pose_pub.publish(filtered_pose_stamped);
-
-      if (new_pose_calculated) { new_pose_calculated = false; }
-    });
-
-
   auto world_tracked_pub =
     nh.advertise<geometry_msgs::PoseStamped>("mood/world_tracked_pose", 1);
+  geometry_msgs::PoseStamped world_tracked_pose;
   auto odom_sub = nh.subscribe<nav_msgs::Odometry>(
     "odometry", 1, [&](const nav_msgs::OdometryConstPtr &msg) {
-      geometry_msgs::PoseStamped world_tracked_pose;
+      if (!new_pose_calculated) {
+        world_tracked_pub.publish(world_tracked_pose);
+        return;
+      }
 
       tf2::Matrix3x3 vehicle_transformation;
       auto vehicle_q = tf2::Quaternion{ msg->pose.pose.orientation.x,
@@ -180,9 +149,9 @@ int main(int argc, char **argv)
 
       // Get tracked world position
       auto world_tracked_position = vehicle_transformation
-                                    * tf2::Vector3{ filtered_pose_stamped.pose.position.x,
-                                        filtered_pose_stamped.pose.position.y,
-                                        filtered_pose_stamped.pose.position.z };
+                                    * tf2::Vector3{ tracked_pose_stamped.pose.position.x,
+                                        tracked_pose_stamped.pose.position.y,
+                                        tracked_pose_stamped.pose.position.z };
 
       tf2::Matrix3x3 tracked_transformation;
       tracked_transformation.setRotation(
@@ -229,13 +198,48 @@ int main(int argc, char **argv)
       world_tracked_pub.publish(world_tracked_pose);
     });
 
+  // Initialize kalman filtering
+  ConstantVelocityLKF lkf_x("lkf_x", nh_private);
+  ConstantVelocityLKF lkf_y("lkf_y", nh_private);
+  ConstantVelocityLKF lkf_z("lkf_z", nh_private);
+  //ConstantVelocityLKF lkf_heading("lkf_heading", nh_private);
+  const auto kalman_dt = 0.02;
+  auto filtered_pose_pub =
+    nh.advertise<geometry_msgs::PoseStamped>("mood/world_filtered_pose", 1);
+  geometry_msgs::PoseStamped filtered_pose_stamped;
+  auto kalman_timer =
+    nh.createTimer(ros::Duration(kalman_dt), [&](const ros::TimerEvent & /* unused */) {
+      // Do the Kalman filtering
+      lkf_x.estimateState(
+        kalman_dt, { world_tracked_pose.pose.position.x }, new_pose_calculated);
+      lkf_y.estimateState(
+        kalman_dt, { world_tracked_pose.pose.position.y }, new_pose_calculated);
+      lkf_z.estimateState(
+        kalman_dt, { world_tracked_pose.pose.position.z }, new_pose_calculated);
+      //lkf_heading.estimateState(kalman_dt,
+      //  { ros_convert::calculateYaw(world_tracked_pose.pose.orientation) },
+      //  new_pose_calculated);
+
+      // Publish filtered pose&
+      filtered_pose_stamped.header.frame_id = world_tracked_pose.header.frame_id;
+      filtered_pose_stamped.header.stamp = ros::Time::now();
+      filtered_pose_stamped.pose.position.x = lkf_x.getState()[0];
+      filtered_pose_stamped.pose.position.y = lkf_y.getState()[0];
+      filtered_pose_stamped.pose.position.z = lkf_z.getState()[0];
+      filtered_pose_stamped.pose.orientation = world_tracked_pose.pose.orientation;
+        //ros_convert::calculate_quaternion(lkf_heading.getState()[0]);
+      filtered_pose_pub.publish(filtered_pose_stamped);
+
+      if (new_pose_calculated) { new_pose_calculated = false; }
+    });
+
   // Initialize the synchronizer
   auto sync_init = synchronizer->initialize(nh);
   if (!sync_init) {
     ROS_FATAL("[DetectionManager] Synchronizer initialization unsucessful!");
     return 1;
   }
-  
+
   ROS_INFO("[DetectionManager] Started Successfully");
   ros::spin();
   return 0;
