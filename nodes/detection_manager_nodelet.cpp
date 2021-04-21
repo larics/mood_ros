@@ -73,7 +73,7 @@ private:
 
   // Pose Tracker
   std::mutex  m_tracker_mutex;
-  PoseTracker pose_tracker{ 50, pose_distance };
+  PoseTracker m_pose_tracker{ 50, pose_distance };
 
   // Kalman Filters
   double                               m_kalman_dt = 0.02;
@@ -183,13 +183,13 @@ bool mood_ros::DetectionManager::switching_srv_cb(std_srvs::TriggerRequest&  req
                                                   std_srvs::TriggerResponse& resp)
 {
   std::scoped_lock lock(m_tracker_mutex);
-  if (pose_tracker.getMap().size() < 2) {
+  if (m_pose_tracker.getMap().size() < 2) {
     resp.success = false;
     resp.message = "Tracking map has less than 2 entries";
     return true;
   }
 
-  auto [success, message] = pose_tracker.nextTrackingID();
+  auto [success, message] = m_pose_tracker.nextTrackingID();
   resp.success            = success;
   resp.message            = message;
   return true;
@@ -221,7 +221,7 @@ void mood_ros::DetectionManager::synchronizer_cb(const sensor_comm::sensor_info&
     std::scoped_lock lock(m_tracker_mutex);
     // Update tracker
     std::tie(tracker_status, tracked_pose) =
-      pose_tracker.updateAllCentroids(detected_pose_array.poses);
+      m_pose_tracker.updateAllCentroids(detected_pose_array.poses);
   }
 
   if (!tracker_status) {

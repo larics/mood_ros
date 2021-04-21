@@ -182,7 +182,7 @@ public:
       param_util::getParamOrThrow(
         nh_private, "blob_detector/max_convexity", params.max_convexity);
       param_util::getParamOrThrow(
-        nh_private, "blob_detector/radius_multiplier", m_radius_multiplier);
+        nh_private, "blob_detector/radius_multiplier", params.radius_multiplier);
 
       // Params loaded directly through launch file
       param_util::getParamOrThrow(nh_private, "blob_detector/tf_prefix", tf_prefix);
@@ -334,24 +334,25 @@ private:
 
   void compute_blob_centroids(int image_rows, int image_cols)
   {
+    auto multiplier = m_blob_param_handler_ptr->getData().radius_multiplier;
+
     // Go through all keypoints and find out their position
     cv::Mat debug_mask(image_rows, image_cols, CV_8UC1, Color::BLACK);
     for (const auto& keypoint : m_blob_keypoints) {
       cv::Mat one_blob_mask(image_rows, image_cols, CV_8UC1, Color::BLACK);
 
       // Draw a circle for the debug mask
-      cv::circle(
-        debug_mask,
-        cv::Point(keypoint.pt.x, keypoint.pt.y),
-        keypoint.size / 2.0
-          * m_radius_multiplier,// keypoint.size is a diameter, not a radius. Duh...
-        Color::WHITE,
-        -1);
+      cv::circle(debug_mask,
+                 cv::Point(keypoint.pt.x, keypoint.pt.y),
+                 keypoint.size / 2.0
+                   * multiplier,// keypoint.size is a diameter, not a radius. Duh...
+                 Color::WHITE,
+                 -1);
 
       // Draw a circle for the one blob mask
       cv::circle(one_blob_mask,
                  cv::Point(keypoint.pt.x, keypoint.pt.y),
-                 keypoint.size / 2.0 * m_radius_multiplier,
+                 keypoint.size / 2.0 * multiplier,
                  Color::WHITE,
                  -1);
 
@@ -379,7 +380,6 @@ private:
   std::vector<cv::KeyPoint> m_blob_keypoints;
   cv::Mat                   m_labeled_image;
   geometry_msgs::PoseArray  m_blob_poses;
-  double                    m_radius_multiplier;
 
   /* Image transport for debugging */
   std::unique_ptr<image_transport::ImageTransport> m_it_ptr;
