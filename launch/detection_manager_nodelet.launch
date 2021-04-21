@@ -9,6 +9,7 @@
   <arg name="depth"           default="camera/color/image_raw/compressedDetph"/>
   <arg name="odometry"        default="mavros/global_position/local"/>
   <arg name="tf_prefix"       default="$(env UAV_NAMESPACE)"/>
+  <arg name="manager"         default="detection_nodelet_manager"/>
 
   <!-- Debug arguments -->
   <arg name="debug" default="false" />
@@ -16,15 +17,16 @@
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
 
   <!-- Determine if launching in stanadalone or manager mode-->
-  <arg name="standalone" default="false" />
-  <arg     if="$(arg standalone)" name="nodelet"          value="standalone" />
-  <arg unless="$(arg standalone)" name="nodelet"          value="load" />
-  <arg     if="$(arg standalone)" name="nodelet_manager"  value="" />
-  <arg unless="$(arg standalone)" name="nodelet_manager"  value="detection_nodelet_manager" />
+  <arg name="standalone"            default="false" />
+  <arg name="load_manager"          default="true"/>
+  <arg     if="$(arg standalone)"   name="nodelet"          value="standalone" />
+  <arg unless="$(arg standalone)"   name="nodelet"          value="load" />
+  <arg     if="$(arg standalone)"   name="nodelet_manager"  value="" />
+  <arg unless="$(arg standalone)"   name="nodelet_manager"  value="$(arg manager)" />
 
   <!-- Start the nodelet manager-->
   <include file="$(find mood_ros)/launch/nodelet_manager.launch">
-    <arg name="standalone"    value="$(arg standalone)"/>
+    <arg name="load_manager"  value="$(arg load_manager)"/>
     <arg name="namespace"     value="$(arg namespace)"/>
     <arg name="debug"         value="$(arg debug)"/>
     <arg name="manager_name"  value="$(arg nodelet_manager)"/>

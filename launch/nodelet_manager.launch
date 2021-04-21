@@ -1,16 +1,16 @@
 <launch>
 
-  <arg name="standalone" default="false" />
-  <arg name="debug" default="false" />
-  <arg name="n_threads" default="16" />
-  <arg name="namespace" default="$(env UAV_NAMESPACE)"/>
-  <arg name="manager_name" default="manager"/>
+  <arg name="load_manager"      default="true"/>
+  <arg name="debug"             default="false" />
+  <arg name="n_threads"         default="16" />
+  <arg name="namespace"         default="$(env UAV_NAMESPACE)"/>
+  <arg name="manager_name"      default="manager"/>
 
   <arg     if="$(arg debug)" name="launch_prefix" value="debug_roslaunch" />
   <arg unless="$(arg debug)" name="launch_prefix" value="" />
 
 
-  <group ns="$(arg namespace)" if="$(eval arg('standalone') == 0)">
+  <group ns="$(arg namespace)" if="$(eval arg('load_manager') == 1)">
 
     <!-- Nodelet manager -->
     <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" 
