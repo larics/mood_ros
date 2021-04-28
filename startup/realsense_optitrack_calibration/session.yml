@@ -1,0 +1,22 @@
+name: calibration 
+root: ./
+startup_window: transform_optimizer
+pre_window: export UAV_NAMESPACE=red; source ~/detection_ws/devel/setup.zsh; 
+  export BASE_LINK=base_link; export CAMERA_LINK=$UAV_NAMESPACE/camera; 
+  export NODELET_MANAGER=camera/realsense2_camera_manager
+windows:
+  - roscore:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch realsense2_camera rs_rgbd.launch camera:=$CAMERA_LINK
+  - optitrack:
+      layout: tiled
+      panes:
+        - waitForRos; roslaunch custom_config/optitrack.launch object_name:=$BASE_LINK
+  - transform_optimizer:
+      layout: tiled
+      panes:
+        - rosrun transform_optimizer sync.py __ns:=$UAV_NAMESPACE
+        - history -s "rostopic pub /red/record_apriltag std_msgs/Bool false"
+        - history -s "rostopic pub /red/apriltags_done std_msgs/Bool true"
