@@ -14,7 +14,7 @@ windows:
       layout: tiled
       panes:
         - waitForRos; rosrun tf static_transform_publisher 
-          0.07953303  0.08274103 -0.04392625  0.00827578 -0.04628412 -0.06977862 0.99645383
+          0.03983044  0.00584224 -0.00428081  0.08307317 -0.03616675 -0.18077276 0.97934265
           $BASE_LINK $CAMERA_LINK"_link" 100
         - waitForRos; roslaunch custom_config/optitrack.launch object_name:=$BASE_LINK
   - detection:
@@ -31,7 +31,7 @@ windows:
       panes:
         - waitForRos; roslaunch transform_optimizer camera_calibration.launch 
           odometry:=/$BASE_LINK/vrpn_client/estimated_odometry
-          detected_pose:=mood/filtered_pose
+          detected_pose:=mood/tracked_pose
           ns:=$UAV_NAMESPACE
         - history -s "rosservice call /$UAV_NAMESPACE/record"
   - i3-layout:
