@@ -139,7 +139,8 @@ public:
       case_handle_empty_centroid_input();
       ROS_WARN_THROTTLE(THROTTLE_DURATION,
                         "CentroidTracker - input vector is empty, returning -1");
-      return { false, centroid_t{} };
+      if (m_currentlyTrackedID == -1) { return {false, centroid_t{}}; } 
+      return { true, m_centroidMap[m_currentlyTrackedID] };
     }
 
     if (m_centroidMap.empty()) {
@@ -152,6 +153,7 @@ public:
     }
 
     update_currently_tracked_ID();
+
     if (m_currentlyTrackedID == -1) { return { false, centroid_t{} }; }
     return { true, m_centroidMap[m_currentlyTrackedID] };
   }

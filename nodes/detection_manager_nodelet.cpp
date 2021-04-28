@@ -73,7 +73,7 @@ private:
 
   // Pose Tracker
   std::mutex  m_tracker_mutex;
-  PoseTracker m_pose_tracker{ 50, pose_distance };
+  PoseTracker m_pose_tracker{ 120, pose_distance };
 
   // Kalman Filters
   double                               m_kalman_dt = 0.02;
