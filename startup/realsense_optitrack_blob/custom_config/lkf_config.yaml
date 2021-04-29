@@ -1,0 +1,23 @@
+lkf_x:
+    kalman:
+        noise_mv: 15
+        noise_pos: 2.25
+        noise_vel: 13.5
+
+lkf_y:
+    kalman:
+        noise_mv: 15
+        noise_pos: 2.25
+        noise_vel: 13.5
+
+lkf_z:
+    kalman:
+        noise_mv: 15
+        noise_pos: 2.25
+        noise_vel: 13.5
+
+lkf_heading:
+    kalman:
+        noise_mv: 15
+        noise_pos: 2.25
+        noise_vel: 13.5
