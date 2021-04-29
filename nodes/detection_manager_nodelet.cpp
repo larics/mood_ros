@@ -288,8 +288,12 @@ void mood_ros::DetectionManager::odom_cb(const nav_msgs::OdometryConstPtr& msg)
   vehicle_transformation.getEulerZYX(vehicle_yaw, vehicle_pitch, vehicle_roll);
 
   // Define directional vectors
-  tf2::Vector3 tracked_direction{ cos(tracked_yaw), sin(tracked_yaw), 0 };
-  tf2::Vector3 vehicle_direction{ cos(vehicle_yaw), sin(vehicle_yaw), 0 };
+  tf2::Vector3 tracked_direction{ cos(tracked_yaw) * cos(tracked_pitch),
+                                  sin(tracked_yaw) * cos(tracked_pitch),
+                                  -sin(tracked_pitch) };
+  tf2::Vector3 vehicle_direction{ cos(vehicle_yaw) * cos(vehicle_pitch),
+                                  sin(vehicle_yaw) * cos(vehicle_pitch),
+                                  -sin(vehicle_pitch) };
 
   // Get the tracked orientation whose dot product is positiove wrt. the vehicle axis
   if (tracked_direction.dot(vehicle_direction) < 0) {
