@@ -44,9 +44,10 @@ private:
     ROS_INFO_THROTTLE(5.0, "[PointcloudRGBSync::callback]");
     sensor_comm::sensor_info sensor_info;
     sensor_info.has_pointcloud = true;
-    sensor_info.pointcloud     = *cloud_msg;
+    sensor_info.pointcloud     = std::move(cloud_msg);
     sensor_info.has_rgb        = true;
-    sensor_info.rgb_image      = *img_msg;
+    sensor_info.rgb_image      = std::move(img_msg);
+    sensor_info.has_depth      = false;
     this->add_sensor_data(sensor_info);
   }
 

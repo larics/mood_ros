@@ -73,7 +73,7 @@ private:
 
   // Pose Tracker
   std::mutex  m_tracker_mutex;
-  PoseTracker m_pose_tracker{ 120, pose_distance };
+  PoseTracker m_pose_tracker{ 250, pose_distance };
 
   // Kalman Filters
   double                               m_kalman_dt = 0.02;
@@ -227,6 +227,7 @@ void mood_ros::DetectionManager::synchronizer_cb(const sensor_comm::sensor_info&
   if (!tracker_status) {
     ROS_FATAL_THROTTLE(1.0, "[DetectionManager] Tracking failed");
     // TODO(lmark): Maybe do something if tracking fails :-)
+    return;
   }
 
   // Publish tracked pose

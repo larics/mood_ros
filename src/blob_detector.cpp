@@ -96,7 +96,7 @@ public:
     // Convert the image to OpencCV
     m_cvimage_ptr =
       cv_bridge::toCvCopy(sensor_info.rgb_image, sensor_msgs::image_encodings::BGR8);
-    pcl::fromROSMsg(sensor_info.pointcloud, *m_cloud_ptr);
+    pcl::fromROSMsg(*sensor_info.pointcloud, *m_cloud_ptr);
 
     if (!m_cvimage_ptr) {
       return { false, "[BlobDetector] Image conversion to CVImage failed." };

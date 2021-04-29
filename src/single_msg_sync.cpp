@@ -16,7 +16,7 @@ public:
         ROS_INFO_THROTTLE(5.0, "[PointcloudSync::m_sub_ptr::callback]");
         sensor_comm::sensor_info info;
         info.has_pointcloud = true;
-        info.pointcloud     = *msg;
+        info.pointcloud     = std::move(msg);
         this->add_sensor_data(info);
       });
     } catch (std::runtime_error& e) {
