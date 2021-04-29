@@ -282,16 +282,18 @@ private:
     auto coefficients = boost::make_shared<pcl::ModelCoefficients>();
     seg.segment(*inliers, *coefficients);
 
-    Eigen::Vector3f model_normal{
-      coefficients->values.at(0), coefficients->values.at(1), coefficients->values.at(2)
-    };
+    Eigen::Vector3f model_normal{ coefficients->values.at(0),
+                                  coefficients->values.at(1),
+                                  coefficients->values.at(2) };
     model_normal = m_camera_to_base_link_rot * model_normal;
     model_normal.normalize();
 
-    Eigen::Quaternionf orientation(Eigen::AngleAxisf(
-      atan2(model_normal(1), model_normal(0)), Eigen::Vector3f::UnitZ()));
-    return orientation;
-  }
+    return Eigen::Quaternionf{
+      Eigen::AngleAxisf(atan2(model_normal(1), model_normal(0)), Eigen::Vector3f::UnitZ())
+      * Eigen::AngleAxisf(-atan2(model_normal(2), model_normal(0)),
+                          Eigen::Vector3f::UnitY())
+    };
+  };
 
   std::tuple<geometry_msgs::Pose, bool> compute_blob_centroid(
     const cv::Mat& one_blob_mask)
