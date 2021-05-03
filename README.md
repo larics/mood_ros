@@ -9,7 +9,8 @@ using the [ROS plugin](http://wiki.ros.org/pluginlib/Tutorials/Writing%20and%20U
 
 ### ROS Packages
 * [uav_ros_lib](https://github.com/lmark1/uav_ros_lib)
- 
+* [pcl_ros](http://wiki.ros.org/pcl_ros)
+
 ### External packages
 * OpenCV
 * PCL
