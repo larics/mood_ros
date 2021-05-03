@@ -14,6 +14,9 @@ using the [ROS plugin](http://wiki.ros.org/pluginlib/Tutorials/Writing%20and%20U
 ### External packages
 * OpenCV
 * PCL
+* Intel Realsense
+    * ```sudo apt install ros-$ROS_DISTRO-realsense2-camera ros-$ROS_DISTRO-rgbd-launch```
+    * [Setup /etc/udev/rules.d](https://github.com/IntelRealSense/realsense-ros/issues/1408#issuecomment-698128999)
 
 ## Description
 The *MOOD* manager consists of a ROS Message Synchronizer plugin and an Object Detector plugin.
@@ -37,7 +40,7 @@ A node which dynamically loads and connects one ROS Message Synchronizer plugin 
 **NOTE** Plugins do not need to be sctrictly in the *mood_ros* ROS package. Any plugin that implements the appropriate interface can be
 loaded into the MOOD Manager node.
 
-## Blob Detector
+## Blob Detector Example
 
 An example detector plugin which aims to detect Blob poses using RGB-D sensor information. It expects to be paired with a  synchronization plugin that can provide ```sensor_msgs::Image``` and ```sensor_msgs::Pointcloud2``` ROS messages (e.g. [PointcloudRGBSync](src/double_msg_sync.cpp)).
 
