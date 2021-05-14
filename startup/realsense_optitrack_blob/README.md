@@ -11,6 +11,7 @@ system is used to validate detection results.
 * [vrpn_catkin](https://github.com/ethz-asl/vrpn_catkin)
 * [catkin_simple](https://github.com/catkin/catkin_simple)
 * [glog_catkin](https://github.com/ethz-asl/glog_catkin)
+* [transform_optimizer](https://github.com/lmark1/transform_optimizer)
 
 # Demonstration
 
