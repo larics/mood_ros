@@ -1,0 +1,4 @@
+mood:
+  world_frame: "world"
+  detector: "BlobDetector"
+  synchronizer: "PointcloudRGBSync"

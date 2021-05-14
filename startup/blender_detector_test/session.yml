@@ -1,0 +1,28 @@
+name: blob_detect
+root: ./
+startup_window: detection
+pre_window: export UAV_NAMESPACE=red; source ~/Workspace/detection_ws/devel/setup.zsh; 
+  export BASE_LINK=base_link; export CAMERA_LINK=$UAV_NAMESPACE/camera; 
+  export NODELET_MANAGER=camera/realsense2_camera_manager
+windows:
+  - roscore:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch blender_rgbd_ros depth_and_rgb_pub.launch images_directory:=/home/lmark/Downloads/rgbd_sim
+        - waitForRos; roslaunch blender_rgbd_ros depth_image_proc_pipeline.launch
+  - detection:
+      layout: tiled
+      panes:
+        - waitForRos; roslaunch mood_ros detection_manager_nodelet.launch
+          image:=/color/image_raw pointcloud:=/depth_registered/points
+          odometry:=/base_link/vrpn_client/estimated_odometry tf_prefix:="none"
+          manager_config:=custom_config/detection_manager_config.yaml
+          blob_config:=custom_config/blob_detector_config.yaml
+          lkf_config:=custom_config/lkf_config.yaml
+  - i3-layout:
+      layout: tiled
+      panes:
+        - waitForRos; sleep 2; rosrun rqt_gui rqt_gui --perspective-file custom_config/blender_detector.perspective
+        - waitForRos; sleep 2; rosrun rviz rviz -d custom_config/blender_detector.rviz
+        - waitForRos; sleep 6; ~/Github/linux_dotfiles/submodules/i3-layout-manager/layout_manager.sh layout.json
